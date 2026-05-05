@@ -39,25 +39,26 @@ app.use(helmet({
 }))
 app.use(compression())
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim().replace(/\/$/, ''))
-  : ['http://localhost:5173', 'http://localhost:3000']
+// Build allowed origins from all env sources
+const allowedOrigins = (() => {
+  const origins = new Set(['http://localhost:5173', 'http://localhost:3000'])
+  if (process.env.ALLOWED_ORIGINS) {
+    process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim().replace(/\/$/, '')).filter(Boolean).forEach(o => origins.add(o))
+  }
+  if (process.env.CLIENT_URL) origins.add(process.env.CLIENT_URL.trim().replace(/\/$/, ''))
+  return [...origins]
+})()
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, curl, etc.)
     if (!origin) return callback(null, true)
-    if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
-      return callback(null, true)
-    }
-    if (process.env.NODE_ENV !== "production") {
-      return callback(null, true) // permissive for dev
-    }
-    callback(new Error("Not allowed by CORS"))
+    if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) return callback(null, true)
+    if (process.env.NODE_ENV !== 'production') return callback(null, true)
+    callback(new Error(`CORS: origin '${origin}' not allowed`))
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
   optionsSuccessStatus: 200
 }))
 
@@ -84,21 +85,22 @@ if (process.env.NODE_ENV === "production") {
   // In production we usually deploy frontend (Vercel) and backend (Render) separately.
   // Only serve static assets if explicitly enabled (e.g. single-server deployment).
   if (process.env.SERVE_STATIC === "true") {
-    app.use(express.static(path.join(__dirname, "../Frontend/dist")))
+    const staticDir = path.join(__dirname, "../client/dist")
+    app.use(express.static(staticDir))
 
     app.get("*", (req, res) => {
-      res.sendFile(path.resolve(__dirname, "../Frontend/dist", "index.html"))
+      res.sendFile(path.join(staticDir, "index.html"))
     })
   }
 } else {
   app.get('/', (req, res) => {
     res.json({ success: true, message: "TechPlus Server Running" })
   })
-
-  app.use((req, res) => {
-    res.status(404).json({ success: false, message: 'Not found' })
-  })
 }
+
+app.use((req, res) => {
+  res.status(404).json({ success: false, message: 'Not found' })
+})
 
 // ============ ERROR HANDLING ============
 app.use((err, req, res, next) => {
@@ -115,12 +117,17 @@ const PORT = process.env.PORT || 5000
 
 connectDB()
   .then(async () => {
-    await ensurePlaylistsSeeded()
-    await ensureRoadmapsSeeded()
-    await fetchAndCacheNews().catch(() => {})
+    await Promise.all([
+      ensurePlaylistsSeeded(),
+      ensureRoadmapsSeeded(),
+      fetchAndCacheNews().catch(() => {})
+    ])
 
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`)
+      const email = process.env.EMAIL || 'MISSING';
+      const maskedEmail = email !== 'MISSING' ? email.replace(/(.{2}).+(@.+)/, "$1***$2") : 'MISSING';
+      console.log(`Email Service Status: ${process.env.EMAIL && process.env.EMAIL_PASS ? '✅ CONFIGURED' : '❌ NOT CONFIGURED'} (${maskedEmail})`)
     })
 
     startHackathonSyncJob()

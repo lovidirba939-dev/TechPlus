@@ -1,6 +1,10 @@
 node_modules
-
-# dotenv (never commit secrets)
 .env
 .env.*
+dist
+*.log
 
+# VS Code media files
+.vscode/*.jpeg
+.vscode/*.jpg
+.vscode/*.png

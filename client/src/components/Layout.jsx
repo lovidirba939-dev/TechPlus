@@ -19,7 +19,7 @@ export default function Layout({ children }) {
 
             <main className="pt-[64px] relative z-10">
                 {/* Single top offset below fixed navbar (~20–32px); avoid stacking with page-level pt-* */}
-                <div className="max-w-[1400px] mx-auto px-6 pt-5 pb-10 md:pt-6 md:pb-10">
+                <div className="max-w-[1400px] mx-auto pt-4 pb-10 md:pt-6 md:pb-10">
                     {children}
                 </div>
             </main>

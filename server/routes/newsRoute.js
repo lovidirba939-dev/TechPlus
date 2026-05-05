@@ -1,18 +1,20 @@
-import express from "express"
+import express from "express";
 import {
   getTechNews,
   getGTechNews,
   getAllTechNews,
   searchNewsArticles,
-  refreshNewsCache
-} from "../controllers/newsController.js"
+  refreshNewsCache,
+  getNewsArticle
+} from "../controllers/newsController.js";
 
-const router = express.Router()
+const router = express.Router();
 
-router.get('/newsapi',    getTechNews)         // Tech news
-router.get('/gnews',      getGTechNews)        // GNews
-router.get('/all',        getAllTechNews)      // Combined
-router.get('/search',     searchNewsArticles)  // Search endpoint
-router.post('/refresh',   refreshNewsCache)    // Admin refresh cache
+router.get('/newsapi', getTechNews);
+router.get('/gnews', getGTechNews);
+router.get('/all', getAllTechNews);
+router.get('/search', searchNewsArticles);
+router.post('/refresh', refreshNewsCache);
+router.get('/:id', getNewsArticle);
 
-export default router
+export default router;

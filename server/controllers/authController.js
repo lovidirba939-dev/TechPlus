@@ -17,32 +17,33 @@ export const register = async (req, res) => {
 
     // Validation
     if (!username || !email || !password || !confirmPassword) {
-      return res.status(400).json({ message: "All fields are required" })
+      return res.status(400).json({ success: false, message: "All fields are required" })
     }
 
     if (!validator.isEmail(email)) {
-      return res.status(400).json({ message: "Invalid email format" })
+      return res.status(400).json({ success: false, message: "Invalid email format" })
     }
 
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
     if (!passwordRegex.test(password)) {
       return res.status(400).json({
+        success: false,
         message: "Password must be at least 8 characters long, contain uppercase, lowercase, a number and a special character"
       })
     }
 
     if (password !== confirmPassword) {
-      return res.status(400).json({ message: "Passwords do not match" })
+      return res.status(400).json({ success: false, message: "Passwords do not match" })
     }
 
     if (username.length < 3 || username.length > 50) {
-      return res.status(400).json({ message: "Username must be 3-50 characters" })
+      return res.status(400).json({ success: false, message: "Username must be 3-50 characters" })
     }
 
     // Check if user exists
     const existingUser = await User.findOne({ $or: [{ email }, { username }] })
     if (existingUser) {
-      return res.status(400).json({ message: "Email or username already registered" })
+      return res.status(400).json({ success: false, message: "Email or username already registered" })
     }
 
     const hashedPassword = await bcrypt.hash(password, 10)
@@ -72,7 +73,7 @@ export const register = async (req, res) => {
     })
 
   } catch (error) {
-    res.status(500).json({ message: error.message })
+    res.status(500).json({ success: false, message: error.message })
   }
 }
 
@@ -82,22 +83,22 @@ export const verifyOtp = async (req, res) => {
     const { email, otp } = req.body
 
     if (!email || !otp) {
-      return res.status(400).json({ message: "Email and OTP are required" })
+      return res.status(400).json({ success: false, message: "Email and OTP are required" })
     }
 
     const user = await User.findOne({ email })
-    if (!user) return res.status(404).json({ message: "User not found" })
+    if (!user) return res.status(404).json({ success: false, message: "User not found" })
 
     if (user.isVerified) {
-      return res.status(400).json({ message: "Already verified" })
+      return res.status(400).json({ success: false, message: "Already verified" })
     }
 
     if (user.otp !== otp) {
-      return res.status(400).json({ message: "Invalid OTP" })
+      return res.status(400).json({ success: false, message: "Invalid OTP" })
     }
 
     if (user.otpExpires < new Date()) {
-      return res.status(400).json({ message: "OTP expired. Request new one." })
+      return res.status(400).json({ success: false, message: "OTP expired. Request new one." })
     }
 
     user.isVerified = true
@@ -125,7 +126,7 @@ export const verifyOtp = async (req, res) => {
     })
 
   } catch (error) {
-    res.status(500).json({ message: error.message })
+    res.status(500).json({ success: false, message: error.message })
   }
 }
 
@@ -135,12 +136,12 @@ export const resendOtp = async (req, res) => {
     const { email } = req.body
 
     if (!email) {
-      return res.status(400).json({ message: "Email is required" })
+      return res.status(400).json({ success: false, message: "Email is required" })
     }
 
     const user = await User.findOne({ email })
-    if (!user) return res.status(404).json({ message: "User not found" })
-    if (user.isVerified) return res.status(400).json({ message: "Already verified" })
+    if (!user) return res.status(404).json({ success: false, message: "User not found" })
+    if (user.isVerified) return res.status(400).json({ success: false, message: "Already verified" })
 
     const otp = generateOtp()
     const otpExpires = new Date(Date.now() + 10 * 60 * 1000)
@@ -161,7 +162,7 @@ export const resendOtp = async (req, res) => {
     })
 
   } catch (error) {
-    res.status(500).json({ message: error.message })
+    res.status(500).json({ success: false, message: error.message })
   }
 }
 
@@ -171,18 +172,18 @@ export const login = async (req, res) => {
     const { email, password } = req.body
 
     if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" })
+      return res.status(400).json({ success: false, message: "Email and password are required" })
     }
 
     const user = await User.findOne({ email })
-    if (!user) return res.status(404).json({ message: "User not found" })
+    if (!user) return res.status(404).json({ success: false, message: "User not found" })
 
     if (!user.isVerified) {
-      return res.status(401).json({ message: "Please verify your email first" })
+      return res.status(401).json({ success: false, message: "Please verify your email first" })
     }
 
     const isMatch = await bcrypt.compare(password, user.password)
-    if (!isMatch) return res.status(401).json({ message: "Wrong password" })
+    if (!isMatch) return res.status(401).json({ success: false, message: "Wrong password" })
 
     const token = jwt.sign(
       { id: user._id, email: user.email, role: user.role },
@@ -204,7 +205,7 @@ export const login = async (req, res) => {
     })
 
   } catch (error) {
-    res.status(500).json({ message: error.message })
+    res.status(500).json({ success: false, message: error.message })
   }
 }
 
@@ -215,7 +216,7 @@ export const logout = async (req, res) => {
 
     res.status(200).json({ success: true, message: "Logged out successfully" })
   } catch (error) {
-    res.status(500).json({ message: error.message })
+    res.status(500).json({ success: false, message: error.message })
   }
 }
 
@@ -225,7 +226,7 @@ export const forgotPassword = async (req, res) => {
     const { email } = req.body
 
     if (!email) {
-      return res.status(400).json({ message: "Email is required" })
+      return res.status(400).json({ success: false, message: "Email is required" })
     }
 
     const user = await User.findOne({ email })
@@ -241,6 +242,8 @@ export const forgotPassword = async (req, res) => {
     user.resetTokenExpires = resetTokenExpires
     await user.save()
 
+    console.log(`[Auth] ForgotPassword request for: ${email}. Email config detected: ${hasEmailConfig()}`);
+
     // Only send email if config is present
     if (hasEmailConfig()) {
       await sendResetEmail(email, resetToken)
@@ -253,7 +256,7 @@ export const forgotPassword = async (req, res) => {
     })
 
   } catch (error) {
-    res.status(500).json({ message: error.message })
+    res.status(500).json({ success: false, message: error.message })
   }
 }
 
@@ -263,16 +266,17 @@ export const resetPassword = async (req, res) => {
     const { token, password, confirmPassword } = req.body
 
     if (!token || !password || !confirmPassword) {
-      return res.status(400).json({ message: "All fields are required" })
+      return res.status(400).json({ success: false, message: "All fields are required" })
     }
 
     if (password !== confirmPassword) {
-      return res.status(400).json({ message: "Passwords do not match" })
+      return res.status(400).json({ success: false, message: "Passwords do not match" })
     }
 
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
     if (!passwordRegex.test(password)) {
       return res.status(400).json({
+        success: false,
         message: "Password must be at least 8 characters long, contain uppercase, lowercase, a number and a special character"
       })
     }
@@ -283,7 +287,7 @@ export const resetPassword = async (req, res) => {
     })
 
     if (!user) {
-      return res.status(400).json({ message: "Invalid or expired reset token" })
+      return res.status(400).json({ success: false, message: "Invalid or expired reset token" })
     }
 
     const hashedPassword = await bcrypt.hash(password, 10)
@@ -295,6 +299,6 @@ export const resetPassword = async (req, res) => {
     res.status(200).json({ success: true, message: "Password reset successful" })
 
   } catch (error) {
-    res.status(500).json({ message: error.message })
+    res.status(500).json({ success: false, message: error.message })
   }
 }

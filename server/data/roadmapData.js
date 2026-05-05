@@ -1,561 +1,433 @@
-// Backend-local copy of roadmap seed data.
-// This intentionally mirrors Frontend/src/data/roadmapData.js
-// so that the Backend can seed MongoDB without a cross-boundary import.
-// When you add or modify roadmaps, update BOTH files.
-
-export const ROADMAPS = [
-    {
-        id: 'frontend',
-        title: 'Frontend Development',
-        badge: 'Beginner to Pro',
-        description: 'Master the modern web — HTML/CSS fundamentals to React, TypeScript, state management, and performance.',
-        steps: [
-            {
-                title: 'HTML & CSS Fundamentals',
-                detail: 'Semantic HTML5 elements, CSS Flexbox & Grid layouts, Responsive Design with media queries, CSS variables, BEM naming convention',
-                videoUrl: 'https://www.youtube.com/embed/qz0aGYMCzl0',
-                links: [
-                    { title: 'MDN: HTML', url: 'https://developer.mozilla.org/en-US/docs/Web/HTML' },
-                    { title: 'MDN: CSS', url: 'https://developer.mozilla.org/en-US/docs/Web/CSS' },
-                    { title: 'Flexbox Guide', url: 'https://css-tricks.com/snippets/css/a-guide-to-flexbox/' }
-                ]
-            },
-            {
-                title: 'JavaScript ES6+',
-                detail: 'Closures & Scope chains, Promises & Async/Await, Destructuring & Spread operator, Array methods (map, filter, reduce), ES Modules',
-                videoUrl: 'https://www.youtube.com/embed/hdI2bqOjyvg',
-                links: [
-                    { title: 'JavaScript.info', url: 'https://javascript.info/' },
-                    { title: 'MDN: Async function', url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function' }
-                ]
-            },
-            {
-                title: 'TypeScript',
-                detail: 'Type annotations & interfaces, Generics, Enums, Type guards, Utility types (Partial, Pick, Omit)',
-                videoUrl: 'https://www.youtube.com/embed/BwuLxPH8IDs',
-                links: [
-                    { title: 'TypeScript Handbook', url: 'https://www.typescriptlang.org/docs/handbook/intro.html' },
-                    { title: 'TS Utility Types', url: 'https://www.typescriptlang.org/docs/handbook/utility-types.html' }
-                ]
-            },
-            {
-                title: 'React & Hooks',
-                detail: 'Virtual DOM, JSX, useState, useEffect, useRef, useMemo, useCallback, Custom Hooks, React.memo',
-                videoUrl: 'https://www.youtube.com/embed/SqcY0GlETPk',
-                links: [
-                    { title: 'React Docs', url: 'https://react.dev/learn' },
-                    { title: 'Hooks Reference', url: 'https://react.dev/reference/react' }
-                ]
-            },
-            {
-                title: 'State Management',
-                detail: 'Redux Toolkit (slices, thunks), Zustand, Context API, React Query / TanStack Query for server state',
-                videoUrl: 'https://www.youtube.com/embed/0W6i5De-qpU',
-                links: [
-                    { title: 'Redux Toolkit', url: 'https://redux-toolkit.js.org/' },
-                    { title: 'TanStack Query', url: 'https://tanstack.com/query/latest' }
-                ]
-            },
-            {
-                title: 'Routing & Navigation',
-                detail: 'React Router v6 (nested routes, dynamic segments), Protected routes, Lazy loading routes, URL parameters',
-                videoUrl: 'https://www.youtube.com/embed/Ul3y1LXxzdU',
-                links: [
-                    { title: 'React Router', url: 'https://reactrouter.com/en/main' }
-                ]
-            },
-            {
-                title: 'Styling & UI Libraries',
-                detail: 'Tailwind CSS, Styled Components, CSS Modules, Material UI, Shadcn/UI, Framer Motion animations',
-                videoUrl: 'https://www.youtube.com/embed/mr15Xzb1Ook',
-                links: [
-                    { title: 'Tailwind CSS', url: 'https://tailwindcss.com/docs' },
-                    { title: 'Framer Motion', url: 'https://www.framer.com/motion/' }
-                ]
-            },
-            {
-                title: 'Testing',
-                detail: 'Jest unit testing, React Testing Library, Cypress E2E testing, Mocking APIs, Code coverage',
-                videoUrl: 'https://www.youtube.com/embed/8Xwq35cPwYg',
-                links: [
-                    { title: 'Testing Library', url: 'https://testing-library.com/docs/react-testing-library/intro/' },
-                    { title: 'Cypress', url: 'https://docs.cypress.io/' }
-                ]
-            },
-            {
-                title: 'Build Tools & Bundlers',
-                detail: 'Vite, Webpack, ESBuild, Babel, Environment variables, Code splitting & tree shaking',
-                videoUrl: 'https://www.youtube.com/embed/5IG4UmULyoA',
-                links: [
-                    { title: 'Vite', url: 'https://vite.dev/' },
-                    { title: 'Webpack Concepts', url: 'https://webpack.js.org/concepts/' }
-                ]
-            },
-            {
-                title: 'Web Performance',
-                detail: 'Lighthouse audits, Lazy loading images, Code splitting, Bundle analysis, Core Web Vitals, Service Workers',
-                videoUrl: 'https://www.youtube.com/embed/0fONene3OIA',
-                links: [
-                    { title: 'Web Vitals', url: 'https://web.dev/vitals/' },
-                    { title: 'Lighthouse', url: 'https://developer.chrome.com/docs/lighthouse/overview/' }
-                ]
-            },
-        ],
-        color: 'var(--accent-purple)',
-    },
-    {
-        id: 'backend',
-        title: 'Backend Development',
-        badge: 'Enterprise Level',
-        description: 'Build scalable server-side systems with Node.js, REST APIs, databases, caching, and deployment.',
-        steps: [
-            { title: 'Node.js Fundamentals', detail: 'Event loop, Modules, File system, Streams, Buffer, Cluster module, Environment configuration', videoUrl: 'https://www.youtube.com/embed/TlB_eWDSMt4' },
-            { title: 'Express.js Framework', detail: 'Routing, Middleware pipeline, Error handling, Template engines, Static file serving, CORS setup', videoUrl: 'https://www.youtube.com/embed/SccSCuHhOw0' },
-            { title: 'RESTful API Design', detail: 'HTTP methods, Status codes, Resource naming, Pagination, Filtering, Rate limiting, API versioning', videoUrl: 'https://www.youtube.com/embed/fgTGADljAeg' },
-            { title: 'Database Design — SQL', detail: 'PostgreSQL, Schema design, Normalization, Joins, Indexes, Transactions, Migrations with Prisma/Knex', videoUrl: 'https://www.youtube.com/embed/W2Z7GOfH07U' },
-            { title: 'Database Design — NoSQL', detail: 'MongoDB, Mongoose ODM, Schema design, Aggregation pipeline, Indexing, Replication', videoUrl: 'https://www.youtube.com/embed/ExcRbA7fy_A' },
-            { title: 'Authentication & Authorization', detail: 'JWT tokens, OAuth 2.0, Passport.js, Bcrypt hashing, Role-based access control, Session management', videoUrl: 'https://www.youtube.com/embed/7Q17ubqLfaM' },
-            { title: 'Caching & Queues', detail: 'Redis for caching, Bull/BullMQ message queues, Rate limiting, Session storage, Pub/Sub patterns', videoUrl: 'https://www.youtube.com/embed/jgpVdJB2sKQ' },
-            { title: 'GraphQL', detail: 'Schema definition, Resolvers, Queries & Mutations, Subscriptions, Apollo Server, DataLoader', videoUrl: 'https://www.youtube.com/embed/ed8SzALpx1Q' },
-            { title: 'Microservices Architecture', detail: 'Service decomposition, API Gateway, Event-driven communication, Service discovery, Circuit breaker pattern', videoUrl: 'https://www.youtube.com/embed/lTAcCNbJ7KE' },
-            { title: 'Deployment & CI/CD', detail: 'Docker containers, Docker Compose, GitHub Actions, Nginx reverse proxy, PM2 process manager, SSL/TLS', videoUrl: 'https://www.youtube.com/embed/pTFZFxd4hOI' },
-        ],
-        color: 'var(--accent-purple)',
-    },
-    {
-        id: 'ai-ml',
-        title: 'AI & Machine Learning',
-        badge: 'Expert Track',
-        description: 'Python to production ML — neural networks, LLM fine-tuning, RAG pipelines, and MLOps.',
-        steps: [
-            { title: 'Python for Data Science', detail: 'NumPy arrays, Pandas DataFrames, Matplotlib & Seaborn visualization, Jupyter Notebooks', videoUrl: 'https://www.youtube.com/embed/LHBE6Q9XlzI' },
-            { title: 'Mathematics for AI', detail: 'Linear Algebra (matrices, eigenvalues), Calculus (gradients, chain rule), Probability & Statistics', videoUrl: 'https://www.youtube.com/embed/fNk_zzaMoSs' },
-            { title: 'Machine Learning Fundamentals', detail: 'Linear/Logistic Regression, Decision Trees, Random Forest, SVM, KNN, Cross-validation, scikit-learn', videoUrl: 'https://www.youtube.com/embed/GwIo3gDZCVQ' },
-            { title: 'Feature Engineering', detail: 'Feature scaling, One-hot encoding, Feature selection, Dimensionality reduction (PCA), Handling missing data', videoUrl: 'https://www.youtube.com/embed/6WDFfaYtN6s' },
-            { title: 'Deep Learning — Neural Networks', detail: 'Perceptrons, Activation functions, Backpropagation, CNNs for images, RNNs/LSTMs for sequences', videoUrl: 'https://www.youtube.com/embed/6M5VXnMADzc' },
-            { title: 'Deep Learning Frameworks', detail: 'PyTorch (tensors, autograd, DataLoader), TensorFlow/Keras, Model training loops, GPU acceleration', videoUrl: 'https://www.youtube.com/embed/V_xro1bcAuI' },
-            { title: 'Natural Language Processing', detail: 'Tokenization, Word embeddings, Transformers, BERT, GPT architecture, Sentiment analysis, NER', videoUrl: 'https://www.youtube.com/embed/fM4qTMfCoak' },
-            { title: 'Large Language Models', detail: 'Fine-tuning with LoRA/QLoRA, Prompt Engineering, RAG pipelines, LangChain, Vector databases', videoUrl: 'https://www.youtube.com/embed/zjkBMFhNj_g' },
-            { title: 'Computer Vision', detail: 'Image classification, Object detection (YOLO), Image segmentation, Transfer learning, OpenCV', videoUrl: 'https://www.youtube.com/embed/oXlwWbU8l2o' },
-            { title: 'MLOps & Deployment', detail: 'Model versioning (MLflow), Docker for ML, FastAPI model serving, Monitoring drift, A/B testing', videoUrl: 'https://www.youtube.com/embed/9BgIDqAzfuA' },
-        ],
-        color: 'var(--accent-purple)',
-    },
-    {
-        id: 'devops',
-        title: 'DevOps & Cloud',
-        badge: 'SRE Specialist',
-        description: 'Infrastructure as code, Kubernetes, cloud providers, monitoring, and site reliability engineering.',
-        steps: [
-            { title: 'Linux Administration', detail: 'Shell scripting (Bash), File permissions, Process management, Cron jobs, SSH, Package managers', videoUrl: 'https://www.youtube.com/embed/sWbUDq4S6Y8' },
-            { title: 'Networking Fundamentals', detail: 'OSI model, TCP/IP, DNS, HTTP/HTTPS, Load balancers, Firewalls, VPNs, CDNs', videoUrl: 'https://www.youtube.com/embed/IPvYjXCsTg8' },
-            { title: 'Version Control — Git Advanced', detail: 'Branching strategies (GitFlow), Rebasing, Cherry-picking, Git hooks, Monorepo management', videoUrl: 'https://www.youtube.com/embed/Uszj_k0DGsg' },
-            { title: 'Containerization — Docker', detail: 'Dockerfile, Multi-stage builds, Docker Compose, Networking, Volumes, Registry management', videoUrl: 'https://www.youtube.com/embed/3c-iBn7E9d8' },
-            { title: 'Container Orchestration — Kubernetes', detail: 'Pods, Services, Deployments, ConfigMaps, Secrets, Helm charts, Ingress controllers', videoUrl: 'https://www.youtube.com/embed/X48VuDVv0do' },
-            { title: 'CI/CD Pipelines', detail: 'GitHub Actions, Jenkins, GitLab CI, Automated testing, Build pipelines, Deployment strategies (Blue/Green, Canary)', videoUrl: 'https://www.youtube.com/embed/R8_veQiYBjI' },
-            { title: 'Cloud Providers — AWS', detail: 'EC2, S3, RDS, Lambda, CloudFront, IAM, VPC, CloudFormation, AWS CLI', videoUrl: 'https://www.youtube.com/embed/H0_D5_x_P8I' },
-            { title: 'Infrastructure as Code', detail: 'Terraform (HCL, modules, state), Ansible for configuration management, Pulumi', videoUrl: 'https://www.youtube.com/embed/SLB_c_ayRMo' },
-            { title: 'Monitoring & Observability', detail: 'Prometheus metrics, Grafana dashboards, ELK Stack (Elasticsearch, Logstash, Kibana), Alerting', videoUrl: 'https://www.youtube.com/embed/9TJx7QTrTyo' },
-            { title: 'Site Reliability Engineering', detail: 'SLOs/SLIs/SLAs, Error budgets, Incident management, Post-mortems, Chaos engineering, Capacity planning', videoUrl: 'https://www.youtube.com/embed/uTEL8Ff1Zvk' },
-        ],
-        color: 'var(--accent-purple)',
-    },
-    {
-        id: 'cybersecurity',
-        title: 'Cybersecurity',
-        badge: 'Security Architect',
-        description: 'Protecting systems and networks from digital attacks — ethical hacking, forensics, and defensive security.',
-        steps: [
-            { title: 'Security Fundamentals', detail: 'CIA triad, Threat modeling, Risk assessment, Security policies, Compliance frameworks (ISO 27001, SOC 2)', videoUrl: 'https://www.youtube.com/embed/3Kq1MIfTWCE' },
-            { title: 'Network Security', detail: 'TCP/IP security, Firewalls & IDS/IPS, VPNs, Network segmentation, Packet analysis with Wireshark', videoUrl: 'https://www.youtube.com/embed/E03gh1fRzmk' },
-            { title: 'Cryptography', detail: 'Symmetric & Asymmetric encryption, Hashing (SHA, bcrypt), Digital signatures, TLS/SSL, PKI', videoUrl: 'https://www.youtube.com/embed/jhXCTbFnK8o' },
-            { title: 'Ethical Hacking & Penetration Testing', detail: 'Kali Linux, Metasploit, Burp Suite, Nmap scanning, Vulnerability assessment, Exploitation techniques', videoUrl: 'https://www.youtube.com/embed/fNzpcB7ODxQ' },
-            { title: 'Web Application Security', detail: 'OWASP Top 10, SQL Injection, XSS, CSRF, SSRF, Security headers, WAF configuration', videoUrl: 'https://www.youtube.com/embed/L_f5Bv7x_rU' },
-            { title: 'Identity & Access Management', detail: 'Active Directory, LDAP, SAML, OAuth 2.0, MFA, Zero Trust architecture, PAM', videoUrl: 'https://www.youtube.com/embed/6iQonEInO10' },
-            { title: 'Cloud Security', detail: 'AWS/Azure/GCP security services, Container security, Serverless security, Cloud-native SIEM', videoUrl: 'https://www.youtube.com/embed/jI8IKpjiCSM' },
-            { title: 'Malware Analysis', detail: 'Static & Dynamic analysis, Sandboxing, Reverse engineering, Ransomware behavior, Threat intelligence', videoUrl: 'https://www.youtube.com/embed/lbFgAGM5IqA' },
-            { title: 'Incident Response & Forensics', detail: 'Incident handling process, Digital forensics tools, Memory forensics, Log analysis, Chain of custody', videoUrl: 'https://www.youtube.com/embed/v2f-P6pZ07I' },
-            { title: 'Security Operations Center (SOC)', detail: 'SIEM tools (Splunk, QRadar), Threat hunting, SOC analyst workflows, Playbook automation, SOAR', videoUrl: 'https://www.youtube.com/embed/fBsN6_SBJtU' },
-        ],
-        color: 'var(--accent-purple)',
-    },
-    {
-        id: 'fullstack',
-        title: 'Full Stack Development',
-        badge: 'Full Stack Pro',
-        description: 'End-to-end web development — building complete applications from frontend UI to backend APIs and databases.',
-        steps: [
-            { title: 'HTML, CSS & JavaScript', detail: 'Semantic markup, Responsive CSS, DOM manipulation, ES6+ features, Event handling, Fetch API', videoUrl: 'https://www.youtube.com/embed/qz0aGYMCzl0' },
-            { title: 'React.js Frontend', detail: 'Component architecture, Hooks, Context API, Routing, Form handling, API integration', videoUrl: 'https://www.youtube.com/embed/SqcY0GlETPk' },
-            { title: 'Node.js & Express Backend', detail: 'REST API development, Middleware, Error handling, File uploads, Server-side validation', videoUrl: 'https://www.youtube.com/embed/Oe421EPjeBE' },
-            { title: 'MongoDB & Mongoose', detail: 'Document modeling, CRUD operations, Aggregation pipeline, Indexing, Population, Validation', videoUrl: 'https://www.youtube.com/embed/ExcRbA7fy_A' },
-            { title: 'Authentication System', detail: 'JWT implementation, Password hashing, OAuth integration, Protected routes, Role-based access', videoUrl: 'https://www.youtube.com/embed/7Q17ubqLfaM' },
-            { title: 'State Management & API Layer', detail: 'Redux Toolkit, RTK Query, Axios interceptors, Error boundaries, Loading states, Optimistic updates', videoUrl: 'https://www.youtube.com/embed/0W6i5De-qpU' },
-            { title: 'Real-time Features', detail: 'WebSockets, Socket.io, Real-time notifications, Chat systems, Live updates, Server-Sent Events', videoUrl: 'https://www.youtube.com/embed/1BfCnjr_Vjg' },
-            { title: 'File Upload & Storage', detail: 'Multer, Cloudinary/AWS S3, Image optimization, Streaming uploads, CDN integration', videoUrl: 'https://www.youtube.com/embed/srPXMt1Q0nY' },
-            { title: 'Testing Full Stack Apps', detail: 'Unit tests (Jest), Integration tests, E2E tests (Cypress), API testing (Supertest), CI test pipelines', videoUrl: 'https://www.youtube.com/embed/8Xwq35cPwYg' },
-            { title: 'Deployment & DevOps', detail: 'Vercel/Netlify for frontend, Railway/Render for backend, Docker, Domain setup, SSL, Environment config', videoUrl: 'https://www.youtube.com/embed/pTFZFxd4hOI' },
-        ],
-        color: 'var(--accent-purple)',
-    },
-    {
-        id: 'mobile',
-        title: 'Mobile App Development',
-        badge: 'Cross Platform Expert',
-        description: 'Build native and cross-platform mobile apps for iOS and Android using React Native and Flutter.',
-        steps: [
-            { title: 'Mobile Development Fundamentals', detail: 'Native vs Cross-platform, Mobile UI patterns, Touch interactions, Platform guidelines, App lifecycle', videoUrl: 'https://www.youtube.com/embed/0-S5a0eXPoc' },
-            { title: 'React Native Basics', detail: 'Core components (View, Text, Image), StyleSheet, Flexbox layout, Platform-specific code, Expo CLI', videoUrl: 'https://www.youtube.com/embed/obH0Po_RdWk' },
-            { title: 'Navigation in React Native', detail: 'React Navigation (Stack, Tab, Drawer), Deep linking, Navigation state, Screen transitions', videoUrl: 'https://www.youtube.com/embed/npe3Wf4t0SQ' },
-            { title: 'State Management (Mobile)', detail: 'AsyncStorage, Redux Toolkit, Zustand, React Query for remote data, Offline-first patterns', videoUrl: 'https://www.youtube.com/embed/0W6i5De-qpU' },
-            { title: 'Native Device Features', detail: 'Camera, GPS/Location, Push notifications, Biometrics, File system, Permissions handling', videoUrl: 'https://www.youtube.com/embed/ZBCUegTZF7M' },
-            { title: 'Flutter & Dart', detail: 'Dart language basics, Flutter widgets, Material/Cupertino design, Hot reload, State management (Riverpod)', videoUrl: 'https://www.youtube.com/embed/VPvVD8t02U8' },
-            { title: 'API Integration & Networking', detail: 'REST API calls, WebSocket connections, Image caching, Offline data sync, Authentication flows', videoUrl: 'https://www.youtube.com/embed/TlB_eWDSMt4' },
-            { title: 'Animations & Gestures', detail: 'Animated API, Reanimated library, Gesture handler, Lottie animations, Shared element transitions', videoUrl: 'https://www.youtube.com/embed/wEVjaXK4sYQ' },
-            { title: 'Testing Mobile Apps', detail: 'Unit testing, Component testing, Detox E2E testing, Snapshot testing, Performance profiling', videoUrl: 'https://www.youtube.com/embed/8Xwq35cPwYg' },
-            { title: 'App Store Deployment', detail: 'App signing, Google Play Console, Apple App Store Connect, OTA updates (CodePush), Beta testing (TestFlight)', videoUrl: 'https://www.youtube.com/embed/oBR97oIJM4' },
-        ],
-        color: 'var(--accent-purple)',
-    },
-    {
-        id: 'data-science',
-        title: 'Data Science & Analytics',
-        badge: 'Data Analyst Pro',
-        description: 'Transform raw data into actionable insights — statistics, visualization, SQL, and business intelligence.',
-        steps: [
-            { title: 'Python Programming', detail: 'Python basics, Data types, Functions, OOP, List comprehensions, File I/O, Virtual environments', videoUrl: 'https://www.youtube.com/embed/LHBE6Q9XlzI' },
-            { title: 'Statistics & Probability', detail: 'Descriptive statistics, Distributions, Hypothesis testing, Confidence intervals, Bayesian thinking, A/B testing', videoUrl: 'https://www.youtube.com/embed/fNk_zzaMoSs' },
-            { title: 'SQL & Database Querying', detail: 'SELECT queries, JOINs, Subqueries, Window functions, CTEs, Query optimization, PostgreSQL/MySQL', videoUrl: 'https://www.youtube.com/embed/HXV3zeQKqGY' },
-            { title: 'Data Manipulation with Pandas', detail: 'DataFrames, GroupBy, Merging, Pivot tables, Time series, Data cleaning, Missing value handling', videoUrl: 'https://www.youtube.com/embed/vmEHCJofslg' },
-            { title: 'Data Visualization', detail: 'Matplotlib, Seaborn, Plotly interactive charts, Dashboard design principles, Storytelling with data', videoUrl: 'https://www.youtube.com/embed/a9UrKTVEeZA' },
-            { title: 'Exploratory Data Analysis', detail: 'EDA workflow, Correlation analysis, Outlier detection, Feature distributions, Data profiling tools', videoUrl: 'https://www.youtube.com/embed/xi0vhXFPegw' },
-            { title: 'Machine Learning for Data Science', detail: 'Regression, Classification, Clustering, Model evaluation metrics, Cross-validation, Pipeline creation', videoUrl: 'https://www.youtube.com/embed/GwIo3gDZCVQ' },
-            { title: 'Big Data Tools', detail: 'Apache Spark, Hadoop ecosystem, PySpark, Distributed computing, ETL pipelines, Data lakes', videoUrl: 'https://www.youtube.com/embed/KzIrGxtQ9pQ' },
-            { title: 'Business Intelligence', detail: 'Tableau, Power BI, Dashboard creation, KPI tracking, Report automation, Data warehouse concepts', videoUrl: 'https://www.youtube.com/embed/eSH4kE1gMag' },
-            { title: 'Data Engineering Basics', detail: 'ETL/ELT pipelines, Apache Airflow, Data modeling, Streaming (Kafka), dbt, Data quality frameworks', videoUrl: 'https://www.youtube.com/embed/qWru-b6m3Sc' },
-        ],
-        color: 'var(--accent-purple)',
-    },
-    {
-        id: 'blockchain',
-        title: 'Blockchain & Web3',
-        badge: 'Web3 Developer',
-        description: 'Decentralized applications, smart contracts, DeFi protocols, and the future of the internet.',
-        steps: [
-            { title: 'Blockchain Fundamentals', detail: 'Distributed ledger technology, Consensus mechanisms (PoW, PoS), Hashing, Merkle trees, Blocks & chains', videoUrl: 'https://www.youtube.com/embed/SSo_EIwHSd4' },
-            { title: 'Ethereum & EVM', detail: 'Ethereum architecture, Gas & transactions, Accounts (EOA vs Contract), EVM bytecode, Ethereum clients', videoUrl: 'https://www.youtube.com/embed/gyMwXuJrbJQ' },
-            { title: 'Solidity Programming', detail: 'Data types, Functions, Modifiers, Inheritance, Events, Error handling, Storage vs Memory', videoUrl: 'https://www.youtube.com/embed/M576WGiDBdQ' },
-            { title: 'Smart Contract Development', detail: 'Hardhat/Foundry toolchain, Contract testing, Deployment scripts, Contract verification, Upgradeable contracts', videoUrl: 'https://www.youtube.com/embed/gyMwXuJrbJQ' },
-            { title: 'DeFi Protocols', detail: 'AMMs (Uniswap), Lending (Aave), Yield farming, Liquidity pools, Flash loans, Tokenomics', videoUrl: 'https://www.youtube.com/embed/17QRFlml4pA' },
-            { title: 'NFTs & Token Standards', detail: 'ERC-20, ERC-721, ERC-1155, Metadata standards, IPFS storage, Marketplace integration', videoUrl: 'https://www.youtube.com/embed/9XaYFVr7JF0' },
-            { title: 'Web3 Frontend (dApps)', detail: 'ethers.js / wagmi, MetaMask integration, Wallet connection, Contract interaction, Event listening', videoUrl: 'https://www.youtube.com/embed/GKJBEEXUha0' },
-            { title: 'Security & Auditing', detail: 'Common vulnerabilities (Reentrancy, Front-running), Slither, Mythril, Audit methodology, Bug bounties', videoUrl: 'https://www.youtube.com/embed/TmZ8gH-toX0' },
-            { title: 'Layer 2 & Scaling', detail: 'Rollups (Optimistic, ZK), Sidechains, State channels, Polygon, Arbitrum, Cross-chain bridges', videoUrl: 'https://www.youtube.com/embed/7pWxCklcNsU' },
-            { title: 'DAOs & Governance', detail: 'On-chain governance, Voting mechanisms, Treasury management, Governor contracts, Snapshot', videoUrl: 'https://www.youtube.com/embed/X_QKlbmZ3rQ' },
-        ],
-        color: 'var(--accent-purple)',
-    },
-    {
-        id: 'game-dev',
-        title: 'Game Development',
-        badge: 'Game Architect',
-        description: 'Create immersive gaming experiences — game engines, physics, graphics programming, and multiplayer systems.',
-        steps: [
-            { title: 'Game Design Principles', detail: 'Game mechanics, Level design, Player psychology, Game loops, Prototyping, Game design documents', videoUrl: 'https://www.youtube.com/embed/zQvWMdWhFCc' },
-            { title: 'C# Programming for Games', detail: 'C# fundamentals, OOP patterns, Delegates & Events, Generics, LINQ, Coroutines', videoUrl: 'https://www.youtube.com/embed/GhQdlMFylQ8' },
-            { title: 'Unity Engine Basics', detail: 'Unity Editor, GameObjects & Components, Prefabs, Scenes, Asset management, Physics engine', videoUrl: 'https://www.youtube.com/embed/gB1F9G0JXOo' },
-            { title: 'Unity 2D Game Development', detail: 'Sprites, Tilemap, 2D Physics, Animations, Parallax scrolling, UI system, Platformer mechanics', videoUrl: 'https://www.youtube.com/embed/on9nwbZngyw' },
-            { title: 'Unity 3D Game Development', detail: '3D modeling basics, Terrain, Lighting, Shaders, Camera systems, Character controllers, Particle effects', videoUrl: 'https://www.youtube.com/embed/pwZpJzpE2lQ' },
-            { title: 'Unreal Engine', detail: 'Blueprints visual scripting, C++ for Unreal, Materials, Landscapes, Sequencer, Niagara VFX', videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
-            { title: 'Game Physics & Math', detail: 'Vectors, Matrices, Quaternions, Collision detection, Raycasting, Rigidbody dynamics', videoUrl: 'https://www.youtube.com/embed/DPfxjQ6squc' },
-            { title: 'AI for Games', detail: 'Pathfinding (A*), State machines, Behavior trees, NavMesh, Enemy AI patterns, Procedural generation', videoUrl: 'https://www.youtube.com/embed/WbZ3MoZslTk' },
-            { title: 'Multiplayer & Networking', detail: 'Client-server architecture, Photon/Mirror networking, Lag compensation, Matchmaking, Lobby systems', videoUrl: 'https://www.youtube.com/embed/L-hJYja4SJQ' },
-            { title: 'Publishing & Monetization', detail: 'Platform deployment (Steam, console), Analytics, In-app purchases, Ads integration, Community building', videoUrl: 'https://www.youtube.com/embed/3C3VhL7FQsM' },
-        ],
-        color: 'var(--accent-purple)',
-    },
-    {
-        id: 'dsa',
-        title: 'Data Structures & Algorithms',
-        badge: 'Master Problem Solver',
-        description: 'Master problem-solving fundamentals — arrays to graphs, sorting to dynamic programming, and competitive coding.',
-        steps: [
-            { title: 'Complexity Analysis', detail: 'Big O, Big Omega, Big Theta, Time vs Space complexity, Amortized analysis, Best/Worst/Average cases', videoUrl: 'https://www.youtube.com/embed/BgLTDT03QtU' },
-            { title: 'Arrays & Strings', detail: 'Two pointer technique, Sliding window, Prefix sum, Kadane\'s algorithm, String matching, Subarrays', videoUrl: 'https://www.youtube.com/embed/pkYVOmU3MgA' },
-            { title: 'Linked Lists', detail: 'Singly & Doubly linked lists, Cycle detection (Floyd\'s), Merge lists, Reverse operations, LRU Cache', videoUrl: 'https://www.youtube.com/embed/Hj_rA0dhr2I' },
-            { title: 'Stacks & Queues', detail: 'Stack operations, Monotonic stack, Queue variants, Deque, Priority Queue, Next greater element', videoUrl: 'https://www.youtube.com/embed/RBSGKlAvoiM' },
-            { title: 'Trees & Binary Search Trees', detail: 'Traversals (Inorder, Preorder, Postorder), BST operations, AVL trees, Segment trees, Trie', videoUrl: 'https://www.youtube.com/embed/fAAZixBzIAI' },
-            { title: 'Heaps & Priority Queues', detail: 'Min/Max heaps, Heap sort, Top K elements, Median finding, Merge K sorted arrays', videoUrl: 'https://www.youtube.com/embed/t0Cq6tVNRBA' },
-            { title: 'Graphs', detail: 'BFS, DFS, Topological sort, Dijkstra\'s, Bellman-Ford, Union-Find, Minimum spanning tree, Bipartite check', videoUrl: 'https://www.youtube.com/embed/tWVWeAqZ0WU' },
-            { title: 'Dynamic Programming', detail: 'Memoization, Tabulation, 0/1 Knapsack, LCS, LIS, Coin change, Matrix chain, DP on trees', videoUrl: 'https://www.youtube.com/embed/oBt53YbR9Kk' },
-            { title: 'Sorting & Searching', detail: 'Quick sort, Merge sort, Heap sort, Binary search variants, Counting sort, Radix sort', videoUrl: 'https://www.youtube.com/embed/kPRA0W1kECg' },
-            { title: 'Advanced Patterns', detail: 'Backtracking, Greedy algorithms, Bit manipulation, Math-based problems, Interval scheduling, Divide & Conquer', videoUrl: 'https://www.youtube.com/embed/DKCbsiDBN6c' },
-        ],
-        color: 'var(--accent-purple)',
-    },
-    {
-        id: 'system-design',
-        title: 'System Design',
-        badge: 'Staff Engineer Track',
-        description: 'Architect large-scale distributed systems — from requirements analysis to fault-tolerant architectures.',
-        steps: [
-            { title: 'System Design Fundamentals', detail: 'Scalability, Reliability, Availability, Consistency, CAP theorem, System requirements gathering', videoUrl: 'https://www.youtube.com/embed/i53Gi_K3o7I' },
-            { title: 'Networking & Protocols', detail: 'HTTP/HTTPS, TCP/UDP, WebSockets, gRPC, REST vs GraphQL, DNS resolution, CDN architecture', videoUrl: 'https://www.youtube.com/embed/IPvYjXCsTg8' },
-            { title: 'Database Selection & Design', detail: 'SQL vs NoSQL trade-offs, Sharding, Replication, Partitioning, Indexing strategies, ACID vs BASE', videoUrl: 'https://www.youtube.com/embed/W2Z7GOfH07U' },
-            { title: 'Caching Strategies', detail: 'Cache-aside, Write-through, Write-behind, Redis/Memcached, Cache invalidation, CDN caching', videoUrl: 'https://www.youtube.com/embed/jgpVdJB2sKQ' },
-            { title: 'Message Queues & Streaming', detail: 'Apache Kafka, RabbitMQ, Event-driven architecture, Pub/Sub, Stream processing, Dead letter queues', videoUrl: 'https://www.youtube.com/embed/W4_aGb_MOls' },
-            { title: 'Load Balancing & Proxies', detail: 'Reverse proxy, Load balancing algorithms, Health checks, API gateway, Rate limiting, Circuit breakers', videoUrl: 'https://www.youtube.com/embed/K0Ta65OqQkY' },
-            { title: 'Microservices Architecture', detail: 'Service decomposition, Inter-service communication, Saga pattern, Service mesh, Domain-Driven Design', videoUrl: 'https://www.youtube.com/embed/lTAcCNbJ7KE' },
-            { title: 'Storage & File Systems', detail: 'Object storage (S3), Block storage, File systems, Data lakes, Blob storage, Backup strategies', videoUrl: 'https://www.youtube.com/embed/xoGq7EfyJnU' },
-            { title: 'Design Case Studies', detail: 'Design URL Shortener, Twitter Feed, WhatsApp, YouTube, Uber, Instagram, Notification system', videoUrl: 'https://www.youtube.com/embed/rnkBKzbFe6U' },
-            { title: 'Monitoring & Reliability', detail: 'Distributed tracing, Logging architecture, Alerting systems, Chaos engineering, Disaster recovery, SLOs', videoUrl: 'https://www.youtube.com/embed/uTEL8Ff1Zvk' },
-        ],
-        color: 'var(--accent-purple)',
-    },
+const STAGE_LABELS = [
+  'Stage 1 - Fundamentals',
+  'Stage 2 - Core Concepts',
+  'Stage 3 - Tools and Frameworks',
+  'Stage 4 - Real Projects',
+  'Stage 5 - Advanced Topics'
 ];
 
-export const ROADMAP_QUESTIONS = {
-    frontend: [
-        '1. What is the difference between display: flex and display: grid?',
-        '2. Explain the React virtual DOM and reconciliation process.',
-        '3. What are React hooks and why were they introduced?',
-        '4. How does the JavaScript event loop work?',
-        '5. What is the difference between useMemo and useCallback?',
-        '6. Explain CSS specificity and how it is calculated.',
-        '7. What are the benefits of TypeScript over JavaScript?',
-        '8. How does code splitting improve web performance?',
-        '9. What is the difference between controlled and uncontrolled components in React?',
-        '10. Explain the purpose of a bundler like Vite or Webpack.'
-    ],
-    backend: [
-        '1. What is the difference between REST and GraphQL APIs?',
-        '2. Explain JWT authentication and how refresh tokens work.',
-        '3. What is database indexing and when should you use it?',
-        '4. How does the Node.js event loop differ from browser JavaScript?',
-        '5. Explain horizontal vs vertical scaling.',
-        '6. What is N+1 query problem and how do you solve it?',
-        '7. What is the purpose of middleware in Express.js?',
-        '8. Explain the CAP theorem in distributed systems.',
-        '9. What is connection pooling and why is it important?',
-        '10. How does Redis differ from a relational database?'
-    ],
-    'ai-ml': [
-        '1. What is the difference between supervised and unsupervised learning?',
-        '2. Explain overfitting and how to prevent it.',
-        '3. What is backpropagation and how does it work?',
-        '4. What is the vanishing gradient problem?',
-        '5. Explain attention mechanism in transformers.',
-        '6. What is the difference between precision and recall?',
-        '7. How does gradient descent optimization work?',
-        '8. What is transfer learning and when should you use it?',
-        '9. Explain the difference between CNN and RNN architectures.',
-        '10. What is RAG (Retrieval Augmented Generation)?'
-    ],
-    devops: [
-        '1. What is Infrastructure as Code (IaC) and why is it important?',
-        '2. Explain the difference between Docker and Kubernetes.',
-        '3. What are the key stages of a CI/CD pipeline?',
-        '4. What is a Kubernetes pod vs deployment vs service?',
-        '5. How does blue-green deployment reduce downtime?',
-        '6. What is the difference between stateful and stateless applications?',
-        '7. Explain service mesh and when you would use Istio.',
-        '8. What are Kubernetes resource limits and why set them?',
-        '9. How does Prometheus collect and store metrics?',
-        '10. What is chaos engineering and what problem does it solve?'
-    ],
-    cybersecurity: [
-        '1. What is the CIA security triad?',
-        '2. Explain SQL injection and how to prevent it.',
-        '3. What is the difference between authentication and authorization?',
-        '4. How does asymmetric encryption work?',
-        '5. What is a Man-in-the-Middle attack?',
-        '6. Explain OWASP Top 10 vulnerabilities.',
-        '7. What is the purpose of a WAF (Web Application Firewall)?',
-        '8. How does certificate pinning improve security?',
-        '9. What is Zero Trust architecture?',
-        '10. Explain the difference between IDS and IPS.'
-    ],
-    dsa: [
-        '1. What is the time complexity of quicksort in the worst case?',
-        '2. Explain the difference between BFS and DFS.',
-        '3. What is a hash collision and how is it resolved?',
-        '4. When would you use a heap vs a sorted array?',
-        '5. What is dynamic programming and how does memoization help?',
-        '6. Explain Floyd\'s cycle detection algorithm.',
-        '7. What is the difference between a tree and a graph?',
-        '8. How does binary search work and what is its complexity?',
-        '9. What is the two-pointer technique and when is it useful?',
-        '10. Explain the sliding window algorithm with an example.'
-    ],
-    'system-design': [
-        '1. How would you design a URL shortener like bit.ly?',
-        '2. Explain consistent hashing and its use in distributed systems.',
-        '3. What is the difference between synchronous and asynchronous communication?',
-        '4. How would you design a rate limiter?',
-        '5. What is database sharding and what are its trade-offs?',
-        '6. How does a CDN improve performance?',
-        '7. What is the difference between message queue and event streaming?',
-        '8. How would you design a notification system at scale?',
-        '9. What is the saga pattern in microservices?',
-        '10. Explain eventual consistency vs strong consistency.'
-    ],
-    fullstack: [
-        '1. How does the browser\'s critical rendering path work?',
-        '2. Explain the difference between SSR, SSG, and CSR.',
-        '3. How does CORS work and how do you configure it?',
-        '4. What are HTTP status codes and when is each used?',
-        '5. How does session management work with JWT vs cookies?',
-        '6. What is optimistic UI update and how do you implement it?',
-        '7. Explain the difference between monolith and microservices.',
-        '8. How do you handle file uploads securely?',
-        '9. What is a WebSocket and when would you use it over HTTP?',
-        '10. How does database connection pooling work in Node.js?'
-    ],
-    mobile: [
-        '1. What is the difference between React Native and Flutter?',
-        '2. How do you handle offline data in a mobile app?',
-        '3. What is the React Native bridge?',
-        '4. Explain the mobile app lifecycle states.',
-        '5. How do you optimize a React Native FlatList for performance?',
-        '6. What is code push and how does it enable OTA updates?',
-        '7. Explain Dart\'s null safety system.',
-        '8. How do you implement biometric authentication?',
-        '9. What is the difference between AsyncStorage and SecureStore?',
-        '10. How do push notifications work on iOS and Android?'
-    ],
-    'data-science': [
-        '1. What is the difference between correlation and causation?',
-        '2. Explain p-value and statistical significance.',
-        '3. What is the curse of dimensionality?',
-        '4. How does PCA reduce dimensionality?',
-        '5. What is the bias-variance trade-off?',
-        '6. Explain the difference between OLTP and OLAP.',
-        '7. What is feature engineering and why is it important?',
-        '8. How does a decision tree decide where to split?',
-        '9. What is A/B testing and how do you measure its significance?',
-        '10. Explain the difference between data lake and data warehouse.'
-    ],
-    blockchain: [
-        '1. What is the difference between Proof of Work and Proof of Stake?',
-        '2. Explain the Ethereum Virtual Machine (EVM).',
-        '3. What is a smart contract re-entrancy attack?',
-        '4. How does a decentralized exchange (DEX) work?',
-        '5. What is gas in Ethereum and why does it exist?',
-        '6. Explain the difference between Layer 1 and Layer 2 scaling.',
-        '7. What is an oracle in blockchain context?',
-        '8. How does zero-knowledge proof work?',
-        '9. What is the purpose of a DAO?',
-        '10. Explain front-running attacks in DeFi.'
-    ],
-    'game-dev': [
-        '1. What is the game loop and why is delta time important?',
-        '2. Explain the difference between Update() and FixedUpdate() in Unity.',
-        '3. What is object pooling and when should you use it?',
-        '4. How does physics collision detection work?',
-        '5. What is the difference between rigidbody and character controller?',
-        '6. Explain the entity-component-system (ECS) architecture.',
-        '7. What is frustum culling and why does it improve performance?',
-        '8. How do behavior trees differ from finite state machines?',
-        '9. What are Scriptable Objects in Unity?',
-        '10. How does multiplayer lag compensation work?'
-    ],
-};
+function buildSteps(def) {
+  return STAGE_LABELS.map((label, idx) => ({
+    title: label,
+    detail: def.stages[idx].join(', '),
+    videoUrl: '',
+    links: [
+      { title: 'Roadmap Reference', url: def.roadmapUrl },
+      { title: 'Official Docs', url: def.docsUrl }
+    ]
+  }));
+}
 
-export const COURSE_SUGGESTIONS = {
-    frontend: [
-        'FREE: The Odin Project — theodinproject.com (full frontend curriculum)',
-        'FREE: freeCodeCamp Responsive Web Design — freecodecamp.org',
-        'FREE: JavaScript.info — javascript.info (comprehensive JS guide)',
-        'PAID: Zero to Mastery — React Developer (Andrei Neagoie)',
-        'PAID: Scrimba Frontend Career Path — scrimba.com',
-        'PAID: Tyler McGinnis React Courses — ui.dev',
-    ],
-    backend: [
-        'FREE: Node.js Official Docs — nodejs.org/en/learn',
-        'FREE: Express.js Crash Course (Traversy Media) — YouTube',
-        'FREE: MongoDB University — learn.mongodb.com',
-        'PAID: NodeJS — The Complete Guide (Udemy, Maximilian Schwarzmüller)',
-        'PAID: The Complete Node.js Developer Course (Udemy, Andrew Mead)',
-        'PAID: Backend & APIs (freeCodeCamp certification) — freecodecamp.org',
-    ],
-    'ai-ml': [
-        'FREE: fast.ai Practical Deep Learning — fast.ai',
-        'FREE: Google Machine Learning Crash Course — developers.google.com/ml-crash-course',
-        'FREE: Kaggle Learn — kaggle.com/learn',
-        'PAID: Deep Learning Specialization — Coursera (Andrew Ng)',
-        'PAID: Machine Learning A-Z (Udemy, Hadelin de Ponteves)',
-        'PAID: Hugging Face NLP Course — huggingface.co/learn',
-    ],
-    devops: [
-        'FREE: KodeKloud Free Courses — kodekloud.com',
-        'FREE: Docker Official Get Started — docs.docker.com/get-started',
-        'FREE: CNCF Kubernetes Training — training.cncf.io',
-        'PAID: DevOps Bootcamp (Udemy, Mumshad Mannambeth)',
-        'PAID: AWS Solutions Architect Prep — acloudguru.com',
-        'PAID: Terraform Associate Certification — HashiCorp Learn',
-    ],
-    cybersecurity: [
-        'FREE: Cybrary Free Security Courses — cybrary.it',
-        'FREE: TryHackMe Free Path — tryhackme.com',
-        'FREE: OWASP WebGoat — owasp.org',
-        'PAID: CompTIA Security+ Study Pack — comptia.org',
-        'PAID: Practical Ethical Hacking (TCM Security)',
-        'PAID: Offensive Security OSCP Certification — offensive-security.com',
-    ],
-    dsa: [
-        'FREE: NeetCode.io — neetcode.io (pattern-based DSA)',
-        'FREE: LeetCode Top Interview (free questions) — leetcode.com',
-        'FREE: USACO Guide — usaco.guide',
-        'PAID: Grokking Algorithms (book by Aditya Bhargava)',
-        'PAID: Master the Coding Interview (Udemy, Andrei Neagoie)',
-        'PAID: AlgoExpert — algoexpert.io',
-    ],
-    'system-design': [
-        'FREE: System Design Primer — github.com/donnemartin/system-design-primer',
-        'FREE: ByteByteGo YouTube Channel — youtube.com/c/ByteByteGo',
-        'FREE: Engineering at Meta / Uber techblogs',
-        'PAID: Grokking System Design Interview — designgurus.io',
-        'PAID: System Design Interview (book by Alex Xu)',
-        'PAID: Exponent System Design Course — tryexponent.com',
-    ],
-    fullstack: [
-        'FREE: Full Stack Open — fullstackopen.com (Helsinki University)',
-        'FREE: The Odin Project Full Stack — theodinproject.com',
-        'FREE: freeCodeCamp Full Stack — freecodecamp.org',
-        'PAID: MERN Stack Bootcamp (Udemy, Maximilian Schwarzmüller)',
-        'PAID: Epic React — epicreact.dev (Kent C. Dodds)',
-        'PAID: Full Stack Development with Next.js (Vercel courses)',
-    ],
-    mobile: [
-        'FREE: React Native Official Docs — reactnative.dev',
-        'FREE: Flutter Official Codelabs — flutter.dev/docs/codelabs',
-        'FREE: Expo Documentation & Tutorials — docs.expo.dev',
-        'PAID: React Native + Hooks (Udemy, Stephen Grider)',
-        'PAID: The Complete React Native and Redux Course (Udemy)',
-        'PAID: Flutter & Dart Complete Guide (Udemy, Maximilian Schwarzmüller)',
-    ],
-    'data-science': [
-        'FREE: Kaggle Learn (Python, ML, SQL) — kaggle.com/learn',
-        'FREE: StatQuest YouTube Channel — youtube.com/c/joshstarmer',
-        'FREE: CS50P Python — cs50.harvard.edu/python',
-        'PAID: Data Science Specialization — Coursera (Johns Hopkins)',
-        'PAID: Python for Data Analysis (book by Wes McKinney)',
-        'PAID: Datacamp Data Scientist Track — datacamp.com',
-    ],
-    blockchain: [
-        'FREE: CryptoZombies — cryptozombies.io (Solidity basics)',
-        'FREE: Ethereum Developer Documentation — ethereum.org/developers',
-        'FREE: Alchemy University — university.alchemy.com',
-        'PAID: Solidity & Smart Contract Course (Udemy, Moralis)',
-        'PAID: Blockchain A-Z (Udemy, Hadelin de Ponteves)',
-        'PAID: Patrick Collins Foundry Course — freecodecamp.org/news',
-    ],
-    'game-dev': [
-        'FREE: Unity Learn — learn.unity.com',
-        'FREE: Brackeys YouTube Channel — youtube.com/c/Brackeys',
-        'FREE: Unreal Online Learning — dev.epicgames.com/community/learning',
-        'PAID: Complete C# Unity Game Developer (Udemy, GameDev.tv)',
-        'PAID: Unreal Engine 5 C++ Developer (Udemy, GameDev.tv)',
-        'PAID: The Game Assembly Education — thegameassembly.com',
-    ],
-};
+function toQuestions(title) {
+  return [
+    `How would you evaluate readiness for Stage 3 in ${title}?`,
+    `Which project best proves Stage 4 competency in ${title}?`,
+    `What trade-offs appear in Stage 5 decisions for ${title}?`
+  ];
+}
+
+function toCourses(def) {
+  return [
+    `FREE: ${def.title} docs and community guides (${def.docsUrl})`,
+    `FREE: Build one portfolio project per stage before moving ahead`,
+    `PAID: Structured specialization track focused on ${def.title}`
+  ];
+}
+
+const ROADMAP_DEFINITIONS = [
+  {
+    id: 'frontend-development',
+    title: 'Frontend Development',
+    badge: 'Core Web',
+    description: 'Learn browser fundamentals, modern UI engineering, and production-grade frontend performance.',
+    docsUrl: 'https://developer.mozilla.org/',
+    roadmapUrl: 'https://roadmap.sh/frontend',
+    stages: [
+      ['HTML semantics', 'CSS layout systems', 'JavaScript essentials', 'Git workflows'],
+      ['DOM events', 'Async data fetching', 'Accessibility basics', 'Responsive design'],
+      ['TypeScript', 'React', 'Routing patterns', 'State management'],
+      ['Design system page', 'Dashboard with API data', 'Auth-protected app', 'Testing workflow'],
+      ['Performance budgets', 'Web Vitals optimization', 'Architecture scaling', 'Observability for UX']
+    ]
+  },
+  {
+    id: 'backend-development',
+    title: 'Backend Development',
+    badge: 'Server Core',
+    description: 'Design resilient APIs, data layers, and secure service logic for production systems.',
+    docsUrl: 'https://expressjs.com/',
+    roadmapUrl: 'https://roadmap.sh/backend',
+    stages: [
+      ['HTTP lifecycle', 'Node runtime fundamentals', 'REST principles', 'Data modeling basics'],
+      ['Authentication flows', 'Validation strategies', 'Error handling', 'Caching concepts'],
+      ['Express patterns', 'ORM/ODM usage', 'Queue systems', 'API documentation'],
+      ['Multi-tenant API', 'File upload service', 'Webhook processing', 'Background jobs'],
+      ['Distributed tracing', 'Rate-limiting strategy', 'Zero-downtime deploys', 'SLO-driven operations']
+    ]
+  },
+  {
+    id: 'full-stack-development',
+    title: 'Full Stack Development',
+    badge: 'End-to-End',
+    description: 'Connect user-facing interfaces with secure backend services and reliable deployment pipelines.',
+    docsUrl: 'https://roadmap.sh/full-stack',
+    roadmapUrl: 'https://roadmap.sh/full-stack',
+    stages: [
+      ['Web fundamentals', 'Client-server model', 'Version control', 'Database basics'],
+      ['SPA architecture', 'REST integration', 'Auth sessions', 'Form and state handling'],
+      ['React and Node stack', 'Testing stack', 'CI workflows', 'Cloud deployment tooling'],
+      ['Production CRUD platform', 'Role-based dashboard', 'Realtime notifications', 'Analytics integration'],
+      ['Scalable architecture', 'Cost optimization', 'Security hardening', 'Team-level coding standards']
+    ]
+  },
+  {
+    id: 'react-development',
+    title: 'React Development',
+    badge: 'UI Specialist',
+    description: 'Master component architecture, state orchestration, and performance for complex React apps.',
+    docsUrl: 'https://react.dev/',
+    roadmapUrl: 'https://roadmap.sh/react',
+    stages: [
+      ['JSX mental model', 'Component composition', 'Props and state', 'Event handling'],
+      ['Hooks patterns', 'Controlled forms', 'Context boundaries', 'Error boundaries'],
+      ['React Router', 'State libraries', 'Data-fetching libraries', 'Testing libraries'],
+      ['Admin console build', 'Realtime feed UI', 'Multi-step workflow app', 'Accessible component library'],
+      ['Render optimization', 'Concurrent features', 'Large app architecture', 'Performance profiling']
+    ]
+  },
+  {
+    id: 'nodejs-development',
+    title: 'Node.js Development',
+    badge: 'Runtime Expert',
+    description: 'Build fast backend services with Node.js internals, async patterns, and runtime observability.',
+    docsUrl: 'https://nodejs.org/en/docs',
+    roadmapUrl: 'https://roadmap.sh/nodejs',
+    stages: [
+      ['Node event loop', 'Modules and package management', 'Async JavaScript', 'CLI basics'],
+      ['HTTP server design', 'Middleware model', 'Input validation', 'Secure configuration'],
+      ['Express ecosystem', 'Queues and workers', 'Redis cache', 'Database integration'],
+      ['Scalable API service', 'Batch processing worker', 'Event webhook pipeline', 'Monitoring setup'],
+      ['Backpressure control', 'Memory tuning', 'High-concurrency design', 'Runtime diagnostics']
+    ]
+  },
+  {
+    id: 'devops',
+    title: 'DevOps',
+    badge: 'Delivery Ops',
+    description: 'Automate software delivery, infrastructure reliability, and release confidence at scale.',
+    docsUrl: 'https://docs.github.com/actions',
+    roadmapUrl: 'https://roadmap.sh/devops',
+    stages: [
+      ['Linux operations', 'Networking basics', 'Shell scripting', 'Git branching strategies'],
+      ['CI/CD principles', 'Container basics', 'Infrastructure as code concepts', 'Monitoring foundations'],
+      ['Docker', 'Kubernetes', 'Terraform', 'Prometheus and Grafana'],
+      ['Pipeline for microservices', 'Blue-green rollout', 'Incident runbook setup', 'Autoscaling setup'],
+      ['SRE metrics', 'Disaster recovery drills', 'Security in pipelines', 'Platform engineering']
+    ]
+  },
+  {
+    id: 'cloud-engineering',
+    title: 'Cloud Engineering',
+    badge: 'Cloud Native',
+    description: 'Design, deploy, and operate cloud-native systems with reliability and cost discipline.',
+    docsUrl: 'https://docs.aws.amazon.com/',
+    roadmapUrl: 'https://roadmap.sh/aws',
+    stages: [
+      ['Compute and storage basics', 'IAM fundamentals', 'Virtual networking', 'Shared responsibility model'],
+      ['Managed databases', 'Load balancing', 'Autoscaling', 'Cloud logging and metrics'],
+      ['AWS/Azure/GCP core services', 'Serverless tooling', 'Container platforms', 'Cost-management tools'],
+      ['Multi-tier app deployment', 'Global CDN setup', 'Backup strategy implementation', 'Cost-aware environments'],
+      ['Multi-region resilience', 'Policy-as-code', 'Cloud governance', 'Security posture automation']
+    ]
+  },
+  {
+    id: 'cybersecurity',
+    title: 'Cybersecurity',
+    badge: 'Security Track',
+    description: 'Protect infrastructure and applications through offensive testing and defensive controls.',
+    docsUrl: 'https://owasp.org/www-project-top-ten/',
+    roadmapUrl: 'https://roadmap.sh/cyber-security',
+    stages: [
+      ['CIA triad', 'Threat modeling', 'Network basics', 'Security hygiene'],
+      ['Web vulnerabilities', 'Auth and access controls', 'Security testing', 'Logging fundamentals'],
+      ['Burp Suite', 'SIEM tools', 'Vulnerability scanners', 'Cloud security controls'],
+      ['Secure coding audit', 'Incident response drill', 'Threat hunting mini-lab', 'Hardening checklist'],
+      ['Zero trust architecture', 'Advanced detection engineering', 'Red-blue exercises', 'Compliance automation']
+    ]
+  },
+  {
+    id: 'artificial-intelligence',
+    title: 'Artificial Intelligence',
+    badge: 'AI Core',
+    description: 'Build intelligent systems with modern AI concepts, model workflows, and responsible deployment.',
+    docsUrl: 'https://platform.openai.com/docs',
+    roadmapUrl: 'https://roadmap.sh/ai-data-scientist',
+    stages: [
+      ['Python foundations', 'Linear algebra essentials', 'Statistics fundamentals', 'Data preprocessing'],
+      ['Supervised learning', 'Unsupervised learning', 'Model evaluation', 'Feature engineering'],
+      ['PyTorch/TensorFlow', 'Experiment tracking', 'Prompt engineering', 'Vector databases'],
+      ['Classifier project', 'RAG assistant project', 'Model API service', 'Evaluation dashboard'],
+      ['Responsible AI', 'Model governance', 'Latency optimization', 'Production drift monitoring']
+    ]
+  },
+  {
+    id: 'machine-learning',
+    title: 'Machine Learning',
+    badge: 'ML Specialist',
+    description: 'Move from statistical learning basics to scalable model development and serving.',
+    docsUrl: 'https://scikit-learn.org/stable/',
+    roadmapUrl: 'https://roadmap.sh/ai-data-scientist',
+    stages: [
+      ['Probability and stats', 'Regression and classification', 'Data cleaning', 'Train-validation split'],
+      ['Model tuning', 'Bias-variance tradeoff', 'Feature selection', 'Cross validation'],
+      ['scikit-learn', 'MLflow', 'Pipeline automation', 'Model registry'],
+      ['Churn predictor', 'Fraud detection baseline', 'Recommendation prototype', 'Model report card'],
+      ['Online inference optimization', 'A/B model rollouts', 'Concept drift controls', 'MLOps governance']
+    ]
+  },
+  {
+    id: 'data-science',
+    title: 'Data Science',
+    badge: 'Insights Track',
+    description: 'Transform raw datasets into reliable insights through statistical rigor and experimentation.',
+    docsUrl: 'https://pandas.pydata.org/docs/',
+    roadmapUrl: 'https://roadmap.sh/ai-data-scientist',
+    stages: [
+      ['Python and notebooks', 'Data wrangling', 'Exploratory analysis', 'SQL querying'],
+      ['Hypothesis testing', 'Distributions', 'Correlation analysis', 'Data storytelling'],
+      ['Pandas', 'NumPy', 'Seaborn/Plotly', 'Notebook pipelines'],
+      ['Business KPI dashboard', 'Experiment readout project', 'Data quality checks', 'Segment analysis'],
+      ['Causal inference basics', 'Productionized analytics', 'Experiment design governance', 'Data ethics']
+    ]
+  },
+  {
+    id: 'data-analytics',
+    title: 'Data Analytics',
+    badge: 'BI Track',
+    description: 'Deliver practical business intelligence with trusted metrics, dashboards, and reporting.',
+    docsUrl: 'https://learn.microsoft.com/power-bi/',
+    roadmapUrl: 'https://roadmap.sh/data-analyst',
+    stages: [
+      ['Metric definitions', 'Spreadsheet fluency', 'SQL fundamentals', 'Data cleanliness'],
+      ['Analytical thinking', 'Dashboard design', 'Funnel analysis', 'Cohort analysis'],
+      ['Power BI/Tableau', 'dbt basics', 'Warehouse querying', 'Data visualization tooling'],
+      ['Executive dashboard', 'Retention analysis', 'Revenue report automation', 'Data QA checklist'],
+      ['Semantic layer design', 'Self-serve analytics governance', 'Advanced experimentation analytics', 'Forecasting basics']
+    ]
+  },
+  {
+    id: 'system-design',
+    title: 'System Design',
+    badge: 'Architecture',
+    description: 'Architect distributed systems with clear trade-off reasoning and operational reliability.',
+    docsUrl: 'https://martinfowler.com/',
+    roadmapUrl: 'https://roadmap.sh/system-design',
+    stages: [
+      ['Scalability and reliability goals', 'Latency budgeting', 'Data consistency basics', 'API contracts'],
+      ['Caching strategies', 'Database trade-offs', 'Message-driven systems', 'Failure handling patterns'],
+      ['Queue technologies', 'Observability stack', 'Load balancing systems', 'Service gateways'],
+      ['URL shortener design', 'Notification platform design', 'Feed service design', 'Realtime chat design'],
+      ['Global multi-region architecture', 'Capacity planning', 'Chaos testing', 'Cost/performance trade-off governance']
+    ]
+  },
+  {
+    id: 'microservices',
+    title: 'Microservices',
+    badge: 'Distributed Services',
+    description: 'Split systems into independently deployable services with robust communication and observability.',
+    docsUrl: 'https://microservices.io/',
+    roadmapUrl: 'https://roadmap.sh/software-architect',
+    stages: [
+      ['Service boundaries', 'Domain-driven basics', 'API contracts', 'Service ownership'],
+      ['Sync vs async communication', 'Event versioning', 'Data consistency approaches', 'Resilience patterns'],
+      ['API gateway', 'Service mesh', 'Broker technologies', 'Distributed tracing tools'],
+      ['Order workflow with saga', 'Inventory service split', 'Audit/event pipeline', 'Independent deploy pipeline'],
+      ['Cross-service governance', 'Platform APIs', 'Latency budgeting per service', 'Incident isolation strategy']
+    ]
+  },
+  {
+    id: 'blockchain',
+    title: 'Blockchain',
+    badge: 'Chain Core',
+    description: 'Understand distributed ledgers, smart contracts, and secure on-chain application design.',
+    docsUrl: 'https://ethereum.org/developers/docs/',
+    roadmapUrl: 'https://roadmap.sh/blockchain',
+    stages: [
+      ['Ledger fundamentals', 'Consensus concepts', 'Wallet basics', 'Cryptographic primitives'],
+      ['Transaction lifecycle', 'Token standards', 'Contract security basics', 'Gas mechanics'],
+      ['Solidity', 'Hardhat/Foundry', 'On-chain indexing tools', 'Wallet integration libraries'],
+      ['ERC-20 project', 'Simple DAO voting contract', 'Contract audit checklist', 'On-chain analytics dashboard'],
+      ['MEV awareness', 'Cross-chain interoperability', 'Formal verification basics', 'Protocol governance models']
+    ]
+  },
+  {
+    id: 'web3',
+    title: 'Web3',
+    badge: 'dApp Track',
+    description: 'Build user-facing decentralized apps that integrate wallets, contracts, and web clients.',
+    docsUrl: 'https://docs.ethers.org/',
+    roadmapUrl: 'https://roadmap.sh/web3',
+    stages: [
+      ['Wallet and identity basics', 'Decentralized app architecture', 'Chain interaction model', 'Transaction UX'],
+      ['Token-based permissions', 'dApp security basics', 'On-chain and off-chain data patterns', 'RPC fundamentals'],
+      ['ethers.js/wagmi', 'Wallet connectors', 'Indexing tools', 'Contract interaction SDKs'],
+      ['Wallet-auth app', 'NFT explorer', 'Governance dashboard', 'Decentralized marketplace prototype'],
+      ['Gas optimization strategy', 'Cross-chain dApp architecture', 'Robust fallback RPC design', 'User safety patterns']
+    ]
+  },
+  {
+    id: 'mobile-development',
+    title: 'Mobile Development',
+    badge: 'Cross Platform',
+    description: 'Ship high-quality mobile experiences with reliable state, performance, and release workflows.',
+    docsUrl: 'https://reactnative.dev/docs/getting-started',
+    roadmapUrl: 'https://roadmap.sh/android',
+    stages: [
+      ['Mobile UI basics', 'Navigation patterns', 'State persistence', 'App lifecycle understanding'],
+      ['Networking and caching', 'Offline behavior', 'Authentication flows', 'Permission handling'],
+      ['React Native/Flutter core tools', 'Build pipelines', 'Crash reporting', 'Push notification tooling'],
+      ['Social feed app', 'Location-based app', 'Offline-first notes app', 'Subscription flow app'],
+      ['Performance tuning', 'Release automation', 'A/B mobile experiments', 'Observability on mobile']
+    ]
+  },
+  {
+    id: 'android-development',
+    title: 'Android Development',
+    badge: 'Android Native',
+    description: 'Build robust Android apps with Kotlin, modern architecture components, and scalable releases.',
+    docsUrl: 'https://developer.android.com/docs',
+    roadmapUrl: 'https://roadmap.sh/android',
+    stages: [
+      ['Kotlin basics', 'Activity and Fragment lifecycle', 'UI fundamentals', 'Gradle fundamentals'],
+      ['Jetpack architecture components', 'State and navigation', 'Data storage patterns', 'Testing basics'],
+      ['Compose UI', 'Room database', 'Dependency injection', 'Background work manager'],
+      ['Commerce app module', 'Realtime chat module', 'Offline sync module', 'Analytics instrumentation'],
+      ['Performance profiling', 'Battery optimization', 'Advanced CI/CD for Play Store', 'Large-team modularization']
+    ]
+  },
+  {
+    id: 'ios-development',
+    title: 'iOS Development',
+    badge: 'iOS Native',
+    description: 'Develop polished iOS apps with Swift, modern UI frameworks, and strong release quality.',
+    docsUrl: 'https://developer.apple.com/documentation/',
+    roadmapUrl: 'https://roadmap.sh/ios',
+    stages: [
+      ['Swift language basics', 'Xcode workflow', 'UIKit/SwiftUI basics', 'App lifecycle'],
+      ['State management in SwiftUI', 'Networking and decoding', 'Persistence patterns', 'Security fundamentals'],
+      ['SwiftUI advanced components', 'Combine basics', 'Core Data', 'Testing frameworks'],
+      ['Finance tracker app', 'Media feed app', 'Push-notification feature', 'In-app purchase flow'],
+      ['Accessibility excellence', 'Performance instrumentation', 'Release automation', 'Scalable app architecture']
+    ]
+  },
+  {
+    id: 'game-development',
+    title: 'Game Development',
+    badge: 'Interactive Systems',
+    description: 'Create engaging games through mechanics design, engine mastery, and optimized runtime behavior.',
+    docsUrl: 'https://learn.unity.com/',
+    roadmapUrl: 'https://roadmap.sh/game-developer',
+    stages: [
+      ['Game loops', 'Input systems', 'Physics fundamentals', 'Object-oriented gameplay code'],
+      ['Level design principles', 'State machines', 'Animation systems', 'Audio integration'],
+      ['Unity or Unreal toolchains', 'Asset pipelines', 'Scripting workflows', 'Profiling tools'],
+      ['2D platformer', '3D action prototype', 'Multiplayer mini-mode', 'In-game economy prototype'],
+      ['Live ops basics', 'Performance optimization', 'Cross-platform build strategy', 'Monetization and retention systems']
+    ]
+  },
+  {
+    id: 'embedded-systems',
+    title: 'Embedded Systems',
+    badge: 'Hardware Software',
+    description: 'Develop firmware for constrained devices with real-time and low-level reliability concerns.',
+    docsUrl: 'https://www.arm.com/resources/education',
+    roadmapUrl: 'https://roadmap.sh/cpp',
+    stages: [
+      ['C/C++ fundamentals', 'Digital electronics basics', 'Microcontroller architecture', 'Memory constraints'],
+      ['Interrupts and timers', 'Peripheral interfaces', 'Power management basics', 'Debug fundamentals'],
+      ['RTOS basics', 'Build toolchains', 'Hardware debugging tools', 'Communication protocols'],
+      ['Sensor firmware project', 'Bootloader setup', 'Low-power telemetry node', 'Firmware update pipeline'],
+      ['Safety-critical considerations', 'Deterministic timing design', 'Secure firmware update strategy', 'Manufacturing diagnostics']
+    ]
+  },
+  {
+    id: 'iot-development',
+    title: 'IoT Development',
+    badge: 'Connected Devices',
+    description: 'Build end-to-end IoT systems across devices, gateways, cloud ingestion, and monitoring.',
+    docsUrl: 'https://aws.amazon.com/iot/',
+    roadmapUrl: 'https://roadmap.sh/software-architect',
+    stages: [
+      ['Sensor and actuator basics', 'Network protocols overview', 'Edge and cloud model', 'Data telemetry basics'],
+      ['MQTT patterns', 'Device provisioning', 'Secure communication', 'Remote command handling'],
+      ['IoT platform tooling', 'Time-series storage', 'Edge runtime tools', 'Rules engines'],
+      ['Smart environment prototype', 'Predictive alerting pipeline', 'Fleet dashboard', 'Device provisioning workflow'],
+      ['Fleet security governance', 'Offline edge resilience', 'Cost and bandwidth optimization', 'IoT observability strategy']
+    ]
+  },
+  {
+    id: 'database-engineering',
+    title: 'Database Engineering',
+    badge: 'Data Infrastructure',
+    description: 'Design scalable database systems with strong data correctness, performance, and maintainability.',
+    docsUrl: 'https://www.postgresql.org/docs/',
+    roadmapUrl: 'https://roadmap.sh/postgresql-dba',
+    stages: [
+      ['Relational modeling', 'Normalization', 'SQL query writing', 'Index basics'],
+      ['Transactions and isolation', 'Query optimization', 'Schema migration planning', 'Backup strategies'],
+      ['PostgreSQL/MySQL internals', 'NoSQL trade-offs', 'Replication tooling', 'Monitoring tooling'],
+      ['High-traffic schema redesign', 'Read replica rollout', 'ETL pipeline integration', 'Audit logging pipeline'],
+      ['Sharding approaches', 'Disaster recovery architecture', 'Data governance framework', 'Capacity and cost planning']
+    ]
+  },
+  {
+    id: 'software-testing',
+    title: 'Software Testing',
+    badge: 'Quality Track',
+    description: 'Establish quality confidence with robust unit, integration, and end-to-end testing strategy.',
+    docsUrl: 'https://testing-library.com/docs/',
+    roadmapUrl: 'https://roadmap.sh/qa',
+    stages: [
+      ['Testing fundamentals', 'Assertions and test design', 'Bug lifecycle basics', 'Risk-based prioritization'],
+      ['Unit and integration strategy', 'Test doubles and mocking', 'Regression planning', 'Exploratory testing'],
+      ['Jest/Vitest', 'Playwright/Cypress', 'API testing tools', 'CI test orchestration'],
+      ['Critical path automation suite', 'Flaky test remediation', 'Performance test baseline', 'Release gate checks'],
+      ['Quality metrics governance', 'Shift-left strategy', 'Reliability engineering collaboration', 'Test architecture at scale']
+    ]
+  },
+  {
+    id: 'ui-ux-design',
+    title: 'UI/UX Design',
+    badge: 'Product Design',
+    description: 'Create intuitive product experiences through user research, interaction design, and design systems.',
+    docsUrl: 'https://www.nngroup.com/articles/',
+    roadmapUrl: 'https://roadmap.sh/ux-design',
+    stages: [
+      ['Design principles', 'Visual hierarchy', 'Typography basics', 'Accessibility fundamentals'],
+      ['User research methods', 'Information architecture', 'Interaction patterns', 'Usability testing'],
+      ['Figma workflows', 'Design system tooling', 'Prototyping tools', 'Handoff and collaboration tools'],
+      ['End-to-end feature redesign', 'Usability benchmark test', 'Design system component set', 'A/B tested UX experiment'],
+      ['Design ops governance', 'Cross-platform consistency strategy', 'Advanced accessibility compliance', 'Outcome-driven design iteration']
+    ]
+  }
+];
+
+export const ROADMAPS = ROADMAP_DEFINITIONS.map((def) => ({
+  id: def.id,
+  title: def.title,
+  badge: def.badge,
+  description: def.description,
+  steps: buildSteps(def),
+  pdfPath: `/pdfs/${def.id}-roadmap.pdf`,
+  color: 'var(--accent-purple)'
+}));
+
+export const ROADMAP_QUESTIONS = Object.fromEntries(
+  ROADMAP_DEFINITIONS.map((def) => [def.id, toQuestions(def.title)])
+);
+
+export const COURSE_SUGGESTIONS = Object.fromEntries(
+  ROADMAP_DEFINITIONS.map((def) => [def.id, toCourses(def)])
+);
+
+

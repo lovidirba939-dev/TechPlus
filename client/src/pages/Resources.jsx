@@ -1,8 +1,15 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+﻿import { memo, useState, useEffect, useRef, useCallback, useMemo, useDeferredValue } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { playlistAPI, userAPI } from '../config/api';
 import { useAuth } from '../context/AuthContext';
+
+const RESOURCE_TYPE_FILTERS = [
+    'All Types',
+    'Paid Course',
+    'Free Course With Certificate',
+    'YouTube Playlist'
+];
 
 function getYouTubeId(url) {
     const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
@@ -198,6 +205,62 @@ function PlaylistPlayer({
     );
 }
 
+const ResourceCard = memo(function ResourceCard({ item, isSaved, savingId, onToggleSaved, onOpen }) {
+    const playable = item.hasVideos;
+    const external = Boolean(item.externalUrl);
+
+    return (
+        <div
+            role="button"
+            tabIndex={0}
+            onClick={() => onOpen(item)}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') onOpen(item);
+            }}
+            className="group cinematic-card flex flex-col justify-between h-full p-4 sm:p-6 cursor-pointer transition-all duration-300 ease-in-out"
+        >
+            <div className="mb-5 sm:mb-8">
+                <h3 className="text-lg font-bold text-white/90 group-hover:text-[#7c3aed] transition-colors duration-200 mb-2 leading-snug">{item.title}</h3>
+                <p className="text-sm leading-relaxed text-white/40">{item.description}</p>
+            </div>
+
+            <div className="mt-auto flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full" style={{ background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.3)', color: '#7c3aed' }}>
+                        {item.platform || item.domain}
+                    </span>
+                    {item.resourceType ? (
+                        <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-xl border border-white/10 text-white/60">
+                            {item.resourceType}
+                        </span>
+                    ) : null}
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleSaved(item._id);
+                        }}
+                        disabled={savingId === String(item._id)}
+                        className={`px-3 py-2 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${isSaved ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : 'border-white/10 bg-white/5 text-white/45 hover:text-white'}`}
+                    >
+                        {savingId === String(item._id) ? '...' : isSaved ? 'Saved' : 'Save'}
+                    </button>
+                    <span className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.05)', color: '#7c3aed' }}>
+                        {playable && !external ? (
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8 5v14l11-7z" /></svg>
+                        ) : (
+                            '->'
+                        )}
+                    </span>
+                </div>
+            </div>
+        </div>
+    );
+});
+
 function mapVideosForPlayer(videos) {
     if (!Array.isArray(videos)) return [];
     return videos
@@ -216,19 +279,24 @@ export default function Resources() {
     const [playlists, setPlaylists] = useState([]);
     const [catalogLoading, setCatalogLoading] = useState(true);
     const [catalogError, setCatalogError] = useState(null);
-    const [activeSection, setActiveSection] = useState('');
+    const [activeSection, setActiveSection] = useState('All Domains');
     const [openPlaylist, setOpenPlaylist] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [resourceTypeFilter, setResourceTypeFilter] = useState('All Types');
     const [savingId, setSavingId] = useState(null);
     const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
+    const [isTypeMenuOpen, setIsTypeMenuOpen] = useState(false);
+    const deferredSearchQuery = useDeferredValue(searchQuery);
 
     const savedResourceIds = useMemo(
         () => (user?.savedResources || []).map((item) => String(item?._id || item)),
         [user?.savedResources]
     );
 
-    const categories = useMemo(() => Array.from(new Set(playlists.map((playlist) => playlist.category))), [playlists]);
-    const itemsInSection = useMemo(() => playlists.filter((playlist) => playlist.category === activeSection), [playlists, activeSection]);
+    const categories = useMemo(
+        () => ['All Domains', ...Array.from(new Set(playlists.map((playlist) => playlist.domain).filter(Boolean))).sort((a, b) => a.localeCompare(b))],
+        [playlists]
+    );
 
     useEffect(() => {
         let cancelled = false;
@@ -253,12 +321,6 @@ export default function Resources() {
             cancelled = true;
         };
     }, []);
-
-    useEffect(() => {
-        if (!catalogLoading && playlists.length > 0 && !activeSection) {
-            setActiveSection(playlists[0].category);
-        }
-    }, [activeSection, catalogLoading, playlists]);
 
     const applyPlaylistDetail = useCallback((detail, resumeIdx = 0, resumeSec = 0) => {
         const normalized = mapVideosForPlayer(detail.videos);
@@ -289,7 +351,7 @@ export default function Resources() {
             try {
                 const detail = await playlistAPI.getById(match._id);
                 if (!cancelled && detail?.success) {
-                    setActiveSection(detail.category);
+                    setActiveSection(detail.domain || 'All Domains');
                     applyPlaylistDetail(detail, user.lastActivity.videoIndex, user.lastActivity.seconds);
                 }
             } finally {
@@ -337,6 +399,31 @@ export default function Resources() {
         }
     };
 
+    const filtered = useMemo(() => {
+        const search = deferredSearchQuery.trim().toLowerCase();
+
+        return playlists.filter((item) => {
+            const matchesDomain = activeSection === 'All Domains' || item.domain === activeSection;
+            const matchesType = resourceTypeFilter === 'All Types' || item.resourceType === resourceTypeFilter;
+            if (!matchesDomain || !matchesType) return false;
+
+            if (!search) return true;
+
+            const haystack = [
+                item.title,
+                item.description,
+                item.platform,
+                item.domain,
+                ...(item.tags || [])
+            ]
+                .filter(Boolean)
+                .join(' ')
+                .toLowerCase();
+
+            return haystack.includes(search);
+        });
+    }, [playlists, activeSection, resourceTypeFilter, deferredSearchQuery]);
+
     if (catalogLoading && playlists.length === 0) {
         return <div className="flex justify-center items-center min-h-[50vh] max-w-[1200px] mx-auto"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-[#7c3aed]" /></div>;
     }
@@ -369,25 +456,18 @@ export default function Resources() {
         );
     }
 
-    const filtered = itemsInSection.filter(
-        (item) =>
-            item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (item.description || '').toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
     return (
-        <div className="transition-all duration-300 ease-in-out w-full max-w-[1100px] mx-auto min-h-[calc(100vh-140px)] relative z-10 px-4 sm:px-6 lg:px-8">
+        <div className="transition-all duration-300 ease-in-out w-full max-w-[1100px] mx-auto min-h-[calc(100vh-140px)] relative z-10 px-[4px] sm:px-6 lg:px-8 pb-28 md:pb-8">
             <div className="flex flex-col lg:flex-row gap-8 transition-all duration-300 ease-in-out">
                 <div className="w-full lg:w-[320px] shrink-0 lg:sticky lg:top-28 lg:self-start lg:max-h-[calc(100vh-160px)]">
-                    {/* Mobile Category Dropdown */}
                     <div className="lg:hidden mb-4 relative">
                         <button
                             type="button"
                             onClick={() => setIsCategoryMenuOpen(!isCategoryMenuOpen)}
-                            className="flex items-center justify-between w-full px-5 py-3.5 bg-white/[0.03] rounded-2xl border border-white/10 text-white transition-all text-sm font-bold shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
+                            className="flex items-center justify-between w-full px-4 py-3 sm:px-5 sm:py-3.5 bg-white/[0.03] rounded-2xl border border-white/10 text-white transition-all text-sm font-bold shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
                         >
                             <div className="flex items-center gap-2">
-                                <span className="text-white/40 uppercase text-[10px] font-black tracking-widest mr-2">Category</span>
+                                <span className="text-white/40 uppercase text-[10px] font-black tracking-widest mr-2">Domain</span>
                                 <span className="text-[#a855f7] px-2 py-0.5 bg-[#a855f7]/10 rounded-lg">{activeSection}</span>
                             </div>
                             <motion.div
@@ -450,13 +530,13 @@ export default function Resources() {
 
                 <div className="flex-1 w-full min-h-[500px] transition-all duration-300 ease-in-out">
                     <motion.div key={activeSection} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: 'easeInOut' }}>
-                        <div className="mb-10 pb-8 border-b border-white/5">
-                            <h1 className="text-3xl font-black text-white uppercase tracking-tighter mb-4">{activeSection}</h1>
-                            <p className="text-base text-white/50 leading-relaxed max-w-2xl mb-8">Essential learning paths, tools, and references.</p>
+                        <div className="mb-6 pb-6 md:mb-10 md:pb-8 border-b border-white/5">
+                            <h1 className="text-xl sm:text-3xl font-black text-white uppercase tracking-tighter mb-3 sm:mb-4">{activeSection}</h1>
+                            <p className="text-base text-white/50 leading-relaxed max-w-2xl mb-8">High-quality developer courses, trusted certifications, and curated YouTube learning paths.</p>
                             <div className="relative max-w-md">
                                 <input
                                     type="text"
-                                    placeholder={window.innerWidth < 1024 ? "Search course..." : `Search ${activeSection}...`}
+                                    placeholder="Search by title, technology, or platform..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3.5 pl-12 pr-10 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#7c3aed] focus:ring-1 focus:ring-[#7c3aed] transition-all duration-300 ease-in-out"
@@ -466,72 +546,95 @@ export default function Resources() {
                                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
                                 </svg>
                             </div>
+
+                            <div className="mt-5 space-y-3">
+                                <div className="hidden md:flex overflow-x-auto whitespace-nowrap gap-2 pb-2 scrollbar-hide">
+                                    {RESOURCE_TYPE_FILTERS.map((type) => {
+                                        const active = resourceTypeFilter === type;
+                                        return (
+                                            <button
+                                                key={type}
+                                                type="button"
+                                                onClick={() => setResourceTypeFilter(type)}
+                                                className={`px-3 py-1.5 md:px-4 md:py-2 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all relative overflow-hidden shrink-0 ${
+                                                    active
+                                                        ? 'bg-[#7c3aed] text-white shadow-[0_0_16px_rgba(124,58,237,0.35)]'
+                                                        : 'bg-white/[0.03] border border-white/5 text-white/45 hover:border-[#7c3aed]/50 hover:text-white'
+                                                }`}
+                                            >
+                                                {type}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                <div className="md:hidden relative z-40">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsTypeMenuOpen(!isTypeMenuOpen)}
+                                        className="flex items-center justify-between w-full px-4 py-3 sm:px-5 sm:py-3.5 bg-white/[0.03] rounded-2xl border border-white/10 text-white transition-all text-sm font-bold shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-white/40 uppercase text-[10px] font-black tracking-widest mr-2">Type</span>
+                                            <span className="text-[#a855f7] px-2 py-0.5 bg-[#a855f7]/10 rounded-lg">{resourceTypeFilter}</span>
+                                        </div>
+                                        <motion.div
+                                            animate={{ rotate: isTypeMenuOpen ? 180 : 0 }}
+                                            transition={{ duration: 0.3 }}
+                                        >
+                                            <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" /></svg>
+                                        </motion.div>
+                                    </button>
+
+                                    <AnimatePresence>
+                                        {isTypeMenuOpen && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: -10, height: 0 }}
+                                                animate={{ opacity: 1, y: 0, height: 'auto' }}
+                                                exit={{ opacity: 0, y: -10, height: 0 }}
+                                                className="absolute top-full left-0 right-0 mt-2 z-50 bg-[#0d0d0f] border border-white/10 rounded-2xl overflow-hidden shadow-2xl p-2"
+                                            >
+                                                {RESOURCE_TYPE_FILTERS.map((type) => (
+                                                    <button
+                                                        key={type}
+                                                        onClick={() => {
+                                                            setResourceTypeFilter(type);
+                                                            setIsTypeMenuOpen(false);
+                                                        }}
+                                                        className={`w-full text-left px-4 py-3 rounded-xl text-sm font-bold transition-all ${
+                                                            resourceTypeFilter === type
+                                                                ? 'bg-[#7c3aed] text-white'
+                                                                : 'text-white/40 hover:bg-white/5 hover:text-white'
+                                                        }`}
+                                                    >
+                                                        {type}
+                                                    </button>
+                                                ))}
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+
+                            </div>
                         </div>
 
                         {filtered.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-20 text-white/30 border border-white/5 rounded-3xl bg-white/[0.02]">
                                 <p className="font-bold uppercase tracking-widest text-sm">No resources found.</p>
-                                <p className="text-xs text-white/20 mt-2">Try adjusting your search terms.</p>
+                                <p className="text-xs text-white/20 mt-2">Try adjusting your search terms or filters.</p>
                             </div>
                         ) : (
                             <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                {filtered.map((item) => {
-                                    const playable = item.hasVideos;
-                                    const external = Boolean(item.externalUrl);
-                                    const isSaved = savedResourceIds.includes(String(item._id));
-
-                                    return (
-                                        <div
-                                            key={item._id}
-                                            role="button"
-                                            tabIndex={0}
-                                            onClick={() => handleCardClick(item)}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter' || e.key === ' ') handleCardClick(item);
-                                            }}
-                                            className="group cinematic-card flex flex-col justify-between h-full p-6 cursor-pointer transition-all duration-300 ease-in-out"
-                                        >
-                                            <div className="mb-8">
-                                                <h3 className="text-lg font-bold text-white/90 group-hover:text-[#7c3aed] transition-colors duration-200 mb-2 leading-snug">{item.title}</h3>
-                                                <p className="text-sm leading-relaxed text-white/40">{item.description}</p>
-                                            </div>
-
-                                            <div className="mt-auto flex items-center justify-between gap-3">
-                                                <div className="flex items-center gap-2 flex-wrap">
-                                                    <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full" style={{ background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.3)', color: '#7c3aed' }}>
-                                                        {item.category}
-                                                    </span>
-                                                    {item.difficulty ? (
-                                                        <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full border border-white/10 text-white/60">
-                                                            {item.difficulty}
-                                                        </span>
-                                                    ) : null}
-                                                </div>
-
-                                                <div className="flex items-center gap-2">
-                                                    <button
-                                                        type="button"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            toggleSavedResource(item._id);
-                                                        }}
-                                                        disabled={savingId === String(item._id)}
-                                                        className={`px-3 py-2 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${isSaved ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : 'border-white/10 bg-white/5 text-white/45 hover:text-white'}`}
-                                                    >
-                                                        {savingId === String(item._id) ? '...' : isSaved ? 'Saved' : 'Save'}
-                                                    </button>
-                                                    <span className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.05)', color: '#7c3aed' }}>
-                                                        {playable && !external ? (
-                                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8 5v14l11-7z" /></svg>
-                                                        ) : (
-                                                            '->'
-                                                        )}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+                                {filtered.map((item) => (
+                                    <ResourceCard
+                                        key={item._id}
+                                        item={item}
+                                        isSaved={savedResourceIds.includes(String(item._id))}
+                                        savingId={savingId}
+                                        onToggleSaved={toggleSavedResource}
+                                        onOpen={handleCardClick}
+                                    />
+                                ))}
                             </div>
                         )}
                     </motion.div>

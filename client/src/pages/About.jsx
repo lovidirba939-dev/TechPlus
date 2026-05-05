@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+﻿import { motion } from 'framer-motion';
 
 const TOPICS = [
     'Artificial Intelligence', 'Web Development', 'Systems & Languages', 'Hardware & Silicon',
@@ -21,30 +21,30 @@ export default function About() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: 'easeOut' }}
-            className="max-w-[1100px] mx-auto w-full px-4 sm:px-6 lg:px-8 pb-12 pt-8"
+            className="max-w-[1100px] mx-auto w-full px-[4px] sm:px-6 lg:px-8 pb-28 md:pb-12 pt-8"
         >
             <div className="flex flex-col md:flex-row gap-12 lg:gap-24 items-start">
 
-                {/* ── LEFT SIDE: HEADER ── */}
+                {/* â”€â”€ LEFT SIDE: HEADER â”€â”€ */}
                 <div className="md:w-[280px] shrink-0 sticky top-32">
-                    <div className="p-6 rounded-2xl border border-white/10 shadow-2xl relative overflow-hidden" style={{ background: 'var(--bg-surface)' }}>
+                    <div className="p-5 sm:p-6 rounded-2xl border border-white/10 shadow-2xl relative overflow-hidden" style={{ background: 'var(--bg-surface)' }}>
                         <div className="absolute top-0 left-0 w-1 h-full" style={{ background: 'linear-gradient(to bottom, #7c3aed, transparent)' }} />
                         <div className="flex items-center gap-2 mb-3">
                             <div className="w-1.5 h-6 rounded-full bg-[#7c3aed]" style={{ boxShadow: '0 0 15px rgba(124,58,237,0.6)' }} />
                             <span className="text-[11px] font-black tracking-[0.2em] uppercase text-[#a855f7]">Platform</span>
                         </div>
-                        <h1 className="text-3xl font-black tracking-tighter text-white mb-2 uppercase">About TechPlus</h1>
+                        <h1 className="text-2xl sm:text-3xl font-black tracking-tighter text-white mb-2 uppercase">About TechPlus</h1>
                         <p className="text-sm text-white/50 leading-relaxed">
                             The intelligence layer for modern technology.
                         </p>
                     </div>
                 </div>
 
-                {/* ── RIGHT SIDE: CONTENT ── */}
+                {/* â”€â”€ RIGHT SIDE: CONTENT â”€â”€ */}
                 <div className="flex-1 flex flex-col gap-6 w-full text-left">
                     {/* Mission */}
                     <motion.div
-                        className="p-8 cinematic-card cursor-default hover:transform-none"
+                        className="p-5 sm:p-8 cinematic-card cursor-default hover:transform-none"
                         initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
                     >
                         <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-3">
@@ -56,7 +56,7 @@ export default function About() {
                                 Our mission at TechPlus is to make sure developers never miss important opportunities or technological breakthroughs.
                             </p>
                             <p>
-                                In today's fast-moving tech ecosystem, valuable information is scattered everywhere — across blogs, research platforms, social media, and developer communities. As a result, many developers miss important hackathons, powerful tools, major technology updates, and emerging trends that could help them grow.
+                                In today's fast-moving tech ecosystem, valuable information is scattered everywhere â€” across blogs, research platforms, social media, and developer communities. As a result, many developers miss important hackathons, powerful tools, major technology updates, and emerging trends that could help them grow.
                             </p>
                             <p>
                                 TechPlus aims to solve this problem by creating a <em className="text-white/80 not-italic font-bold">centralized technology intelligence platform</em> where developers can quickly discover what truly matters.
@@ -95,7 +95,7 @@ export default function About() {
 
                     {/* Coverage */}
                     <motion.div
-                        className="p-8 cinematic-card cursor-default hover:transform-none"
+                        className="p-5 sm:p-8 cinematic-card cursor-default hover:transform-none"
                         initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
                     >
                         <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-3">
@@ -116,7 +116,7 @@ export default function About() {
 
                     {/* Built With */}
                     <motion.div
-                        className="p-8 cinematic-card cursor-default hover:transform-none"
+                        className="p-5 sm:p-8 cinematic-card cursor-default hover:transform-none"
                         initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
                     >
                         <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-3">
@@ -135,13 +135,13 @@ export default function About() {
                             ))}
                         </div>
                         <p className="text-xs mt-8 leading-relaxed text-white/30 font-medium">
-                            Intentionally lightweight — no bloat, no trackers, no unnecessary dependencies. Pure signal.
+                            Intentionally lightweight â€” no bloat, no trackers, no unnecessary dependencies. Pure signal.
                         </p>
                     </motion.div>
 
                     {/* Version */}
                     <p className="text-left text-[10px] font-black uppercase tracking-[0.2em] pt-8 pb-4 text-white/20">
-                        TechPlus v2.0 Cinematic · {new Date().getFullYear()}
+                        TechPlus v2.0 Cinematic Â· {new Date().getFullYear()}
                     </p>
                 </div>
             </div>

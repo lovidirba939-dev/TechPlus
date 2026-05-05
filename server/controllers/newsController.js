@@ -1,7 +1,8 @@
-import {
+﻿import {
   getNewsWithFallback,
   searchNews,
-  fetchAndCacheNews
+  fetchAndCacheNews,
+  getNewsById
 } from "../services/newsService.js";
 
 function parseCategory(category) {
@@ -126,7 +127,7 @@ export const getAllTechNews = async (req, res) => {
       success: true,
       combined: {
         total: result.articles.length,
-        articles: result.articles.slice(0, 20)
+        articles: result.articles.slice(0, 60)
       },
       source: result.source,
       rateLimited: result.rateLimited,
@@ -142,6 +143,31 @@ export const getAllTechNews = async (req, res) => {
       message:
         "News temporarily unavailable due to API limit. Please try later.",
       usedFallback: false
+    });
+  }
+};
+
+export const getNewsArticle = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const article = await getNewsById(id);
+
+    if (!article) {
+      return res.status(404).json({
+        success: false,
+        message: "Article not found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      article
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch article",
+      error: error.message
     });
   }
 };

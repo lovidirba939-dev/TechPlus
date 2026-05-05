@@ -1,20 +1,16 @@
 import axios from 'axios';
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
+const API_BASE_URL = (
+  import.meta.env.VITE_API_URL ||
+  import.meta.env.VITE_API_BASE_URL ||
+  'http://localhost:5000'
+).replace(/\/$/, '');
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true
 });
-
-apiClient.interceptors.request.use(
-  (config) => {
-    config.withCredentials = true;
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
 
 apiClient.interceptors.response.use(
   (response) => response.data,
@@ -102,6 +98,8 @@ export const newsAPI = {
     }),
   searchNews: (query) =>
     apiClient.get('/api/news/search', { params: { q: query } }),
+  getById: (id) =>
+    apiClient.get('/api/news/' + id),
   refreshNews: () =>
     apiClient.post('/api/news/refresh')
 };
@@ -133,3 +131,7 @@ export const hackathonAPI = {
 };
 
 export default apiClient;
+
+
+
+

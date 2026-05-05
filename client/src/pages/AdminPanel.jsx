@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
@@ -13,16 +13,7 @@ export default function AdminPanel() {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
 
-    useEffect(() => {
-        if (user?.role !== 'admin') {
-            addToast('Access denied. Admin panel is only for administrators.', 'error');
-            navigate('/');
-            return;
-        }
-        fetchUsers();
-    }, [user, navigate, addToast]);
-
-    const fetchUsers = async () => {
+    const fetchUsers = useCallback(async () => {
         try {
             setLoading(true);
             // Placeholder: In production, use adminAPI.getUsers()
@@ -41,7 +32,16 @@ export default function AdminPanel() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [addToast]);
+
+    useEffect(() => {
+        if (user?.role !== 'admin') {
+            addToast('Access denied. Admin panel is only for administrators.', 'error');
+            navigate('/');
+            return;
+        }
+        fetchUsers();
+    }, [user, navigate, addToast, fetchUsers]);
 
     const handleDeleteUser = async (userId) => {
         if (window.confirm('Are you sure you want to delete this user?')) {

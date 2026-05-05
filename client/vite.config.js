@@ -9,13 +9,18 @@ export default defineConfig({
         port: 5173,
     },
     build: {
+        cssCodeSplit: true,
         rollupOptions: {
             output: {
                 manualChunks: {
-                    vendor: ['react', 'react-dom', 'react-router-dom', 'framer-motion', 'lucide-react', 'axios'],
+                    'react-core': ['react', 'react-dom'],
+                    'react-router': ['react-router-dom'],
+                    'framer': ['framer-motion'],
+                    'network': ['axios'],
                 },
             },
         },
         chunkSizeWarningLimit: 1000,
     },
 })
+

@@ -68,7 +68,7 @@ export function AuthProvider({ children }) {
             const response = await authAPI.verifyOtp(email, otp);
 
             if (response.success && response.user) {
-                login(response.user); // 🔥 SAVE USER
+                login(response.user);
             }
 
             return response;
@@ -96,7 +96,7 @@ export function AuthProvider({ children }) {
             const response = await authAPI.login(email, password);
 
             if (response.success && response.user) {
-                login(response.user); // 🔥 SAVE USER
+                login(response.user);
             }
 
             return response;

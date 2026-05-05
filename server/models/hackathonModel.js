@@ -31,6 +31,7 @@ const hackathonSchema = new mongoose.Schema({
     default: 'Online'
   },
   location: String,
+  organizer: String,
   startDate: Date,
   endDate: Date,
   prize: String,
@@ -62,3 +63,4 @@ hackathonSchema.index({ tags: 1 });
 hackathonSchema.index({ titleKey: 1, dateKey: 1 }, { unique: true, sparse: true });
 
 export const Hackathon = mongoose.model("Hackathon", hackathonSchema);
+

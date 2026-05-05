@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { userAPI } from '../config/api';
 import { useToast } from '../context/ToastContext';
@@ -54,11 +54,7 @@ export default function Bookmarks() {
   const [deletingId, setDeletingId] = useState(null);
   const { addToast } = useToast();
 
-  useEffect(() => {
-    fetchBookmarks();
-  }, []);
-
-  const fetchBookmarks = async () => {
+  const fetchBookmarks = useCallback(async () => {
     try {
       setLoading(true);
       const response = await userAPI.getBookmarks();
@@ -68,7 +64,11 @@ export default function Bookmarks() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [addToast]);
+
+  useEffect(() => {
+    fetchBookmarks();
+  }, [fetchBookmarks]);
 
   const handleDelete = async (bookmarkId) => {
     setDeletingId(bookmarkId);
@@ -91,7 +91,7 @@ export default function Bookmarks() {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="max-w-[1100px] mx-auto px-4 sm:px-6 lg:px-8 pb-16 pt-10"
+      className="max-w-[1100px] mx-auto px-[4px] sm:px-6 lg:px-8 pb-32 md:pb-16 pt-8"
     >
       {/* Header */}
       <div className="mb-10">
@@ -99,16 +99,16 @@ export default function Bookmarks() {
           <span className="tag">Bookmarks</span>
           <span className="text-white/20 text-xs font-bold">{bookmarks.length} saved</span>
         </div>
-        <h1 className="text-4xl font-black text-white tracking-tighter uppercase">
+        <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tighter uppercase">
           My Bookmarks
         </h1>
         <p className="text-white/40 text-sm mt-2 leading-relaxed max-w-lg">
-          All your saved articles in one place — organized, searchable, and accessible anytime.
+          All your saved articles in one place, organized, searchable, and accessible anytime.
         </p>
       </div>
 
       {/* Category Filter */}
-      <div className="flex flex-wrap gap-2 mb-10">
+      <div className="flex flex-wrap gap-2 mb-6 sm:mb-10">
         {CATEGORIES.map((cat) => (
           <button
             key={cat}
@@ -143,7 +143,7 @@ export default function Bookmarks() {
                 className="cinematic-card group flex flex-col overflow-hidden rounded-3xl"
               >
                 {/* Thumbnail */}
-                <div className="relative h-44 overflow-hidden bg-black/30 shrink-0">
+                <div className="relative h-40 sm:h-44 overflow-hidden bg-black/30 shrink-0">
                   <img
                     src={bookmark.articleImage || IMG_FALLBACK}
                     alt={bookmark.articleTitle}
@@ -157,7 +157,7 @@ export default function Bookmarks() {
                 </div>
 
                 {/* Body */}
-                <div className="flex flex-col flex-1 p-5 gap-3">
+                <div className="flex flex-col flex-1 p-4 sm:p-5 gap-3">
                   <h3 className="text-sm font-bold text-white leading-snug line-clamp-2 flex-1">
                     {bookmark.articleTitle}
                   </h3>

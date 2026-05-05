@@ -42,7 +42,12 @@ export const sendOtpEmail = async (email, otp) => {
       `
     })
   } catch (error) {
-    console.warn('Email sending failed, continuing registration flow:', error.message)
+    console.error('❌ OTP email sending failed:', {
+      error: error.message,
+      code: error.code,
+      command: error.command,
+      email: email
+    });
   }
 }
 
@@ -71,6 +76,11 @@ export const sendResetEmail = async (email, resetToken) => {
       `
     })
   } catch (error) {
-    console.warn('Reset email sending failed, using fallback flow:', error.message)
+    console.error('❌ Reset email sending failed:', {
+      error: error.message,
+      code: error.code,
+      stack: error.stack,
+      email: email
+    });
   }
 }

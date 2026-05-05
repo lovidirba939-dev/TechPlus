@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
+﻿import React, { useState, useEffect, useMemo, useCallback, useDeferredValue } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useToast } from '../context/ToastContext'
 import { hackathonAPI } from '../config/api'
@@ -16,6 +16,7 @@ export default function Hackathons() {
   const [bookmarks, setBookmarks] = useState([])
 
   const [searchQuery, setSearchQuery] = useState('')
+  const deferredSearchQuery = useDeferredValue(searchQuery)
   const [modeFilter, setModeFilter] = useState('All')
   const [viewMode, setViewMode] = useState('browse')
   const [selectedHackathon, setSelectedHackathon] = useState(null)
@@ -60,22 +61,35 @@ export default function Hackathons() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- load once on mount
   }, [])
 
+  const bookmarkedSet = useMemo(() => new Set(bookmarks), [bookmarks])
+
+  const dedupedHackathons = useMemo(() => {
+    const seen = new Set()
+    return hackathons.filter((hackathon) => {
+      const key = `${hackathon.title?.trim()?.toLowerCase() || ''}|${String(hackathon.startDate || '').slice(0, 10)}`
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+  }, [hackathons])
+
   const filteredHackathons = useMemo(() => {
     let filtered =
       viewMode === 'saved'
-        ? hackathons.filter((h) => bookmarks.includes(h._id))
-        : hackathons
+        ? dedupedHackathons.filter((h) => bookmarkedSet.has(h._id))
+        : dedupedHackathons
 
     if (modeFilter !== 'All') {
       filtered = filtered.filter((h) => h.mode === modeFilter)
     }
 
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase()
+    if (deferredSearchQuery.trim()) {
+      const query = deferredSearchQuery.toLowerCase()
       filtered = filtered.filter(
         (h) =>
           h.title.toLowerCase().includes(query) ||
           h.description?.toLowerCase().includes(query) ||
+          h.organizer?.toLowerCase().includes(query) ||
           h.tags?.some((tag) => tag.toLowerCase().includes(query))
       )
     }
@@ -84,20 +98,20 @@ export default function Hackathons() {
       (a, b) => new Date(a.startDate) - new Date(b.startDate)
     )
     return filtered
-  }, [hackathons, searchQuery, modeFilter, bookmarks, viewMode])
+  }, [dedupedHackathons, deferredSearchQuery, modeFilter, bookmarkedSet, viewMode])
 
   const toggleBookmark = async (hackathonId) => {
     try {
       if (bookmarks.includes(hackathonId)) {
         const response = await hackathonAPI.removeBookmark(hackathonId)
         if (response.success) {
-          setBookmarks(bookmarks.filter((id) => id !== hackathonId))
+          setBookmarks((prev) => prev.filter((id) => id !== hackathonId))
           addToast('Bookmark removed', 'success')
         }
       } else {
         const response = await hackathonAPI.addBookmark(hackathonId)
         if (response.success) {
-          setBookmarks([...bookmarks, hackathonId])
+          setBookmarks((prev) => [...prev, hackathonId])
           addToast('Hackathon saved!', 'success')
         }
       }
@@ -132,7 +146,7 @@ export default function Hackathons() {
       transition={{ duration: 0.4, ease: 'easeOut' }}
       className={`min-h-screen ${isDark ? 'bg-[#09090b]' : 'bg-gray-50'}`}
     >
-      <div className="flex flex-col lg:flex-row gap-8 max-w-[1100px] mx-auto min-h-[calc(100vh-140px)] relative z-10 pt-8 px-4 sm:px-6">
+      <div className="flex flex-col lg:flex-row gap-8 max-w-[1100px] mx-auto min-h-[calc(100vh-140px)] relative z-10 pt-8 px-[4px] sm:px-6 pb-28 md:pb-12">
         <div className="hidden lg:flex w-full lg:w-[320px] shrink-0 flex-col gap-4 lg:sticky lg:top-28 lg:self-start lg:max-h-[calc(100vh-160px)] lg:overflow-auto">
           <div className="p-6 rounded-3xl border border-white/5 bg-white/[0.02]">
             <h2 className="text-[10px] font-black text-[#a855f7] uppercase tracking-[0.2em] mb-3">Events</h2>
@@ -216,14 +230,14 @@ export default function Hackathons() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="mb-10 pb-8 border-b border-white/5">
+            <div className="mb-6 pb-6 md:mb-10 md:pb-8 border-b border-white/5">
               {/* Mobile Specific Header/Filters */}
-              <div className="lg:hidden mb-6 flex flex-col gap-4 px-2">
+              <div className="lg:hidden mb-4 flex flex-col gap-2 px-2">
                 <h2 className="text-[10px] font-black text-[#a855f7] uppercase tracking-[0.2em]">Discovery</h2>
-                <h3 className="text-3xl font-black text-white uppercase tracking-tight -mt-1">Hackathons</h3>
+                <h3 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight">Hackathons</h3>
               </div>
 
-              <div className="flex items-center gap-3 max-w-xl">
+              <div className="flex items-center gap-2 sm:gap-3 max-w-xl">
                 <div className="relative flex-1 group">
                   <input
                     type="text"
@@ -249,7 +263,7 @@ export default function Hackathons() {
                 {/* Mobile Saved Toggle */}
                 <button
                   onClick={() => setViewMode(viewMode === 'saved' ? 'browse' : 'saved')}
-                  className={`lg:hidden shrink-0 w-[50px] h-[50px] flex items-center justify-center rounded-2xl border transition-all ${
+                  className={`lg:hidden shrink-0 w-[44px] h-[44px] sm:w-[50px] sm:h-[50px] flex items-center justify-center rounded-2xl border transition-all ${
                     viewMode === 'saved'
                       ? 'bg-[#7c3aed] border-[#7c3aed] text-white shadow-[0_0_20px_rgba(124,58,237,0.4)]'
                       : 'bg-white/[0.03] border-white/10 text-white/40'
@@ -267,7 +281,7 @@ export default function Hackathons() {
                 <button
                   type="button"
                   onClick={() => setIsModeDropdownOpen(!isModeDropdownOpen)}
-                  className="flex items-center justify-between w-full px-5 py-3.5 bg-white/[0.03] rounded-2xl border border-white/10 text-white transition-all text-sm font-bold"
+                  className="flex items-center justify-between w-full px-4 py-3 sm:px-5 sm:py-3.5 bg-white/[0.03] rounded-2xl border border-white/10 text-white transition-all text-sm font-bold"
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-white/40 uppercase text-[10px] font-black tracking-widest mr-2">Mode</span>
@@ -360,7 +374,7 @@ export default function Hackathons() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
             {filteredHackathons.map((hackathon, idx) => {
               const status = getStatusBadge(hackathon)
-              const isBookmarked = bookmarks.includes(hackathon._id)
+              const isBookmarked = bookmarkedSet.has(hackathon._id)
 
               return (
                 <motion.div
@@ -375,7 +389,7 @@ export default function Hackathons() {
                       : 'bg-white border-gray-200 hover:border-blue-500'
                   }`}
                 >
-                  <div className="h-44 overflow-hidden bg-gradient-to-br from-[#7c3aed]/20 to-[#3b82f6]/20">
+                  <div className="h-40 sm:h-44 overflow-hidden bg-gradient-to-br from-[#7c3aed]/20 to-[#3b82f6]/20">
                     <img
                       src={hackathon.image || FALLBACK_IMAGE}
                       alt={hackathon.title}
@@ -387,7 +401,7 @@ export default function Hackathons() {
                     />
                   </div>
 
-                  <div className="p-6">
+                  <div className="p-4 sm:p-6">
                     <div className="flex items-center justify-between mb-3">
                       <span className={`px-3 py-1 rounded-full text-xs font-medium ${status.color}`}>
                         {status.text}
@@ -409,7 +423,7 @@ export default function Hackathons() {
                       </button>
                     </div>
 
-                    <h3 className={`text-xl font-black tracking-tight mb-2 line-clamp-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    <h3 className={`text-[17px] sm:text-xl font-black tracking-tight mb-2 line-clamp-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                       {hackathon.title}
                     </h3>
 
@@ -427,12 +441,17 @@ export default function Hackathons() {
 
                       <div className={`flex items-center gap-2 ${isDark ? 'text-white/55' : 'text-gray-600'}`}>
                         <span className="font-bold">LOCATION</span>
-                        <span>{hackathon.location || '—'}</span>
+                        <span>{hackathon.location || '-'}</span>
                       </div>
 
                       <div className={`flex items-center gap-2 ${isDark ? 'text-white/55' : 'text-gray-600'}`}>
                         <span className="font-bold">MODE</span>
                         <span>{hackathon.mode}</span>
+                      </div>
+
+                      <div className={`flex items-center gap-2 ${isDark ? 'text-white/55' : 'text-gray-600'}`}>
+                        <span className="font-bold">ORGANIZER</span>
+                        <span>{hackathon.organizer || 'TBA'}</span>
                       </div>
 
                       {hackathon.prize && (
@@ -573,11 +592,15 @@ export default function Hackathons() {
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className={`p-4 rounded-lg ${isDark ? 'bg-slate-700/50' : 'bg-gray-100'}`}>
                     <p className={`text-sm font-medium ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>Location</p>
-                    <p className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{selectedHackathon.location || '—'}</p>
+                    <p className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{selectedHackathon.location || '-'}</p>
                   </div>
                   <div className={`p-4 rounded-lg ${isDark ? 'bg-slate-700/50' : 'bg-gray-100'}`}>
                     <p className={`text-sm font-medium ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>Mode</p>
                     <p className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{selectedHackathon.mode}</p>
+                  </div>
+                  <div className={`p-4 rounded-lg ${isDark ? 'bg-slate-700/50' : 'bg-gray-100'}`}>
+                    <p className={`text-sm font-medium ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>Organizer</p>
+                    <p className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{selectedHackathon.organizer || 'TBA'}</p>
                   </div>
                   <div className={`p-4 rounded-lg ${isDark ? 'bg-slate-700/50' : 'bg-gray-100'}`}>
                     <p className={`text-sm font-medium ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>Start Date</p>
@@ -604,8 +627,7 @@ export default function Hackathons() {
                       rel="noopener noreferrer"
                       className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-center"
                     >
-                      Register Now →
-                    </a>
+                      Register Now</a>
                   )}
                 </div>
               </div>
@@ -616,3 +638,10 @@ export default function Hackathons() {
     </motion.div>
   )
 }
+
+
+
+
+
+
+

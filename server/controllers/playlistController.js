@@ -5,7 +5,7 @@ import { PlaylistVideo } from "../models/playlistVideoModel.js"
 export const getPlaylists = async (req, res) => {
   try {
     const withFlags = await Playlist.aggregate([
-      { $sort: { category: 1, title: 1 } },
+      { $sort: { domain: 1, title: 1 } },
       {
         $lookup: {
           from: "playlistvideos",
@@ -17,12 +17,17 @@ export const getPlaylists = async (req, res) => {
       {
         $project: {
           category: 1,
+          group: 1,
+          domain: 1,
           title: 1,
+          platform: 1,
+          resourceType: 1,
           description: 1,
           thumbnail: 1,
           totalDuration: 1,
           difficulty: 1,
           externalUrl: 1,
+          tags: 1,
           hasVideos: { $gt: [{ $size: "$_v" }, 0] }
         }
       }
@@ -56,12 +61,17 @@ export const getPlaylistById = async (req, res) => {
       success: true,
       _id: playlist._id,
       title: playlist.title,
+      platform: playlist.platform,
+      resourceType: playlist.resourceType,
       description: playlist.description,
       thumbnail: playlist.thumbnail,
       category: playlist.category,
+      group: playlist.group,
+      domain: playlist.domain,
       totalDuration: playlist.totalDuration,
       difficulty: playlist.difficulty,
       externalUrl: playlist.externalUrl,
+      tags: playlist.tags || [],
       videos: videos.map((v) => ({
         _id: v._id,
         title: v.title,

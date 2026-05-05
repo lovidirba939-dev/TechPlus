@@ -31,12 +31,17 @@ export async function seedPlaylistsFromCatalog(options = {}) {
       if (hasPlaylist) {
         const p = await Playlist.create({
           category: section.category,
+          group: section.category,
+          domain: link.domain || section.category,
           title: link.title,
+          platform: link.platform || "YouTube",
+          resourceType: link.resourceType || "YouTube Playlist",
           description: link.desc || "",
           thumbnail: thumb,
           totalDuration: link.duration || "",
           difficulty: link.difficulty || "",
-          externalUrl: null
+          externalUrl: null,
+          tags: link.tags || []
         })
         await PlaylistVideo.insertMany(
           link.playlist.map((v, order) => ({
@@ -50,12 +55,17 @@ export async function seedPlaylistsFromCatalog(options = {}) {
       } else {
         await Playlist.create({
           category: section.category,
+          group: section.category,
+          domain: link.domain || section.category,
           title: link.title,
+          platform: link.platform || "",
+          resourceType: link.resourceType || "",
           description: link.desc || "",
           thumbnail: "",
           totalDuration: "",
           difficulty: link.difficulty || "",
-          externalUrl: link.url
+          externalUrl: link.url,
+          tags: link.tags || []
         })
       }
     }
@@ -67,7 +77,12 @@ export async function seedPlaylistsFromCatalog(options = {}) {
 
 /** Run on server boot: seed only when there are no playlists yet. */
 export async function ensurePlaylistsSeeded() {
-  const result = await seedPlaylistsFromCatalog({ reset: false })
+  const existing = await Playlist.findOne().lean()
+  const shouldUpgradeLegacy =
+    existing &&
+    (!existing.resourceType || !existing.domain || !existing.platform)
+
+  const result = await seedPlaylistsFromCatalog({ reset: Boolean(shouldUpgradeLegacy) })
   if (result.inserted) {
     console.log(`Success: Resources catalog auto-seeded (${result.count} playlists)`)
   }

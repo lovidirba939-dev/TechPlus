@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { roadmapAPI } from '../config/api';
@@ -45,7 +45,7 @@ export default function RoadmapDetail() {
     }
 
     return (
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl mx-auto px-[4px] sm:px-0 pb-28 md:pb-12">
             <Link
                 to="/roadmaps"
                 className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest mb-8 transition-colors duration-200"
@@ -61,7 +61,7 @@ export default function RoadmapDetail() {
                         {roadmap.badge}
                     </span>
                 </div>
-                <h1 className="text-4xl font-black tracking-tighter text-white mb-3">{roadmap.title}</h1>
+                <h1 className="text-2xl sm:text-4xl font-black tracking-tighter text-white mb-3">{roadmap.title}</h1>
                 <p style={{ color: 'rgba(255,255,255,0.5)' }}>{roadmap.description}</p>
             </div>
 
@@ -95,7 +95,7 @@ export default function RoadmapDetail() {
                                     <span className="text-[11px] font-black uppercase shrink-0" style={{ color: isOpen ? '#a855f7' : 'rgba(255,255,255,0.2)' }}>
                                         {String(idx + 1).padStart(2, '0')}
                                     </span>
-                                    <span className="text-base font-semibold transition-colors duration-200" style={{ color: isOpen ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.6)' }}>
+                                    <span className="text-sm sm:text-base font-semibold transition-colors duration-200 leading-snug" style={{ color: isOpen ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.6)' }}>
                                         {step.title}
                                     </span>
                                     <span className={`ml-auto text-xs transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} style={{ color: 'rgba(255,255,255,0.2)' }}>v</span>

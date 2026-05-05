@@ -1,4 +1,4 @@
-import mongoose from "mongoose"
+import mongoose from "mongoose";
 
 const roadmapStepSchema = new mongoose.Schema(
   {
@@ -13,7 +13,7 @@ const roadmapStepSchema = new mongoose.Schema(
     ]
   },
   { _id: false }
-)
+);
 
 const roadmapSchema = new mongoose.Schema(
   {
@@ -22,11 +22,12 @@ const roadmapSchema = new mongoose.Schema(
     badge: { type: String, default: "" },
     description: { type: String, default: "" },
     color: { type: String, default: "var(--accent-purple)" },
+    pdfPath: { type: String, default: "" },
     steps: [roadmapStepSchema],
     questions: [{ type: String }],
     courseSuggestions: [{ type: String }]
   },
   { timestamps: true }
-)
+);
 
-export const Roadmap = mongoose.model("Roadmap", roadmapSchema)
+export const Roadmap = mongoose.model("Roadmap", roadmapSchema);

@@ -1,9 +1,8 @@
-import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect, useMemo, useDeferredValue } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 import { userAPI, roadmapAPI } from '../config/api';
 import { useToast } from '../context/ToastContext';
-import { jsPDF } from 'jspdf';
 
 const DOMAIN_ICONS = {
     frontend: () => (
@@ -54,7 +53,8 @@ export default function Roadmaps() {
     const [isDownloading, setIsDownloading] = useState(false);
     const [roadmapProgress, setRoadmapProgress] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
-    const [sidebarOffset, setSidebarOffset] = useState(0);
+    const deferredSearchQuery = useDeferredValue(searchQuery);
+    const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 1024);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     useEffect(() => {
@@ -77,6 +77,12 @@ export default function Roadmaps() {
         };
         loadRoadmaps();
     }, [location.search, addToast]);
+
+    useEffect(() => {
+        const updateDesktop = () => setIsDesktop(window.innerWidth >= 1024);
+        window.addEventListener('resize', updateDesktop);
+        return () => window.removeEventListener('resize', updateDesktop);
+    }, []);
 
     useEffect(() => {
         if (!selectedDomain) return;
@@ -104,135 +110,21 @@ export default function Roadmaps() {
         if (!selectedDomain || isDownloading) return;
         setIsDownloading(true);
         try {
-            const doc = new jsPDF();
-            const margin = 20;
-            const pageWidth = doc.internal.pageSize.getWidth();
-            const pageHeight = doc.internal.pageSize.getHeight();
-            const maxW = pageWidth - margin * 2;
-            let y = 20;
-
-            const checkPageBreak = (needed) => {
-                if (y + needed > pageHeight - 20) {
-                    doc.addPage();
-                    doc.setFillColor(10, 10, 15);
-                    doc.rect(0, 0, pageWidth, pageHeight, 'F');
-                    y = 20;
-                    return true;
-                }
-                return false;
-            };
-
-            const drawLine = () => {
-                doc.setDrawColor(40, 40, 50);
-                doc.line(margin, y, pageWidth - margin, y);
-                y += 10;
-            };
-
-            const wrapText = (text, x, w, stepY) => {
-                const lines = doc.splitTextToSize(text, w);
-                lines.forEach((line) => {
-                    checkPageBreak(stepY);
-                    doc.text(line, x, y);
-                    y += stepY;
-                });
-            };
-
-            doc.setFillColor(10, 10, 15);
-            doc.rect(0, 0, pageWidth, pageHeight, 'F');
-            doc.setFontSize(22);
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor(255, 255, 255);
-            doc.text(selectedDomain.title.toUpperCase(), margin, y);
-            y += 8;
-            doc.setFontSize(10);
-            doc.setTextColor(124, 58, 237);
-            doc.text('TECHPLUS INTELLIGENCE PLATFORM', margin, y);
-            y += 12;
-            drawLine();
-
-            doc.setFontSize(11);
-            doc.setTextColor(180, 180, 200);
-            wrapText(selectedDomain.description, margin, maxW, 6);
-            y += 10;
-
-            doc.addPage();
-            doc.setFillColor(10, 10, 15);
-            doc.rect(0, 0, pageWidth, pageHeight, 'F');
-            y = 18;
-            doc.setFontSize(16);
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor(168, 85, 247);
-            doc.text('STEP-BY-STEP LEARNING ROADMAP', margin, y);
-            y += 8;
-            drawLine();
-
-            selectedDomain.steps.forEach((step, idx) => {
-                checkPageBreak(30);
-                doc.setFontSize(12);
-                doc.setTextColor(220, 220, 255);
-                wrapText(`${String(idx + 1).padStart(2, '0')}. ${step.title}`, margin, maxW, 7);
-                doc.setFontSize(9.5);
-                doc.setFont('helvetica', 'normal');
-                doc.setTextColor(160, 160, 190);
-                const topics = getStepTopics(step.detail);
-                wrapText(`Focus:`, margin + 5, maxW - 5, 5);
-                topics.forEach((t) => wrapText(`• ${t}`, margin + 8, maxW - 8, 5));
-                
-                const links = Array.isArray(step.links) ? step.links : [];
-                const inferredLinks = links.length > 0 ? links : [];
-
-                if (inferredLinks.length > 0) {
-                    y += 2;
-                    doc.setFont('helvetica', 'bold');
-                    doc.setTextColor(168, 85, 247);
-                    const linkTexts = inferredLinks.map(l => l.title || l.url).join(' \u2022 ');
-                    wrapText(`Resources: ${linkTexts}`, margin + 5, maxW - 5, 5);
-                    y += 2;
-                }
-            });
-
-            if ((selectedDomain.courseSuggestions || []).length > 0) {
-                doc.addPage();
-                doc.setFillColor(10, 10, 15);
-                doc.rect(0, 0, pageWidth, pageHeight, 'F');
-                y = 18;
-                doc.setFontSize(16);
-                doc.setFont('helvetica', 'bold');
-                doc.setTextColor(168, 85, 247);
-                doc.text('RECOMMENDED COURSES', margin, y);
-                y += 8;
-                drawLine();
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'normal');
-                selectedDomain.courseSuggestions.forEach((course) => {
-                    checkPageBreak(10);
-                    doc.setTextColor(course.startsWith('FREE:') ? 100 : 255, course.startsWith('FREE:') ? 220 : 180, course.startsWith('FREE:') ? 100 : 50);
-                    wrapText(`- ${course}`, margin, maxW, 5.5);
-                });
+            const response = await fetch(selectedDomain.pdfPath);
+            if (!response.ok) {
+                throw new Error('Roadmap PDF unavailable');
             }
 
-            if ((selectedDomain.questions || []).length > 0) {
-                doc.addPage();
-                doc.setFillColor(10, 10, 15);
-                doc.rect(0, 0, pageWidth, pageHeight, 'F');
-                y = 18;
-                doc.setFontSize(16);
-                doc.setFont('helvetica', 'bold');
-                doc.setTextColor(168, 85, 247);
-                doc.text('PRACTICE QUESTIONS', margin, y);
-                y += 8;
-                drawLine();
-                doc.setFontSize(10.5);
-                doc.setTextColor(220, 220, 255);
-                selectedDomain.questions.forEach((question) => {
-                    checkPageBreak(14);
-                    wrapText(question, margin, maxW, 6);
-                    y += 2;
-                });
-            }
-
+            const blob = await response.blob();
+            const objectUrl = window.URL.createObjectURL(blob);
             const safeTitle = selectedDomain.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-            doc.save(`${safeTitle}-roadmap.pdf`);
+            const link = document.createElement('a');
+            link.href = objectUrl;
+            link.download = `${safeTitle}-roadmap.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(objectUrl);
 
             await userAPI.recordRoadmapDownload({
                 title: selectedDomain.title,
@@ -241,7 +133,7 @@ export default function Roadmaps() {
 
             addToast(`Downloaded ${selectedDomain.title} roadmap PDF`, 'success');
         } catch (error) {
-            addToast(error?.message || 'Failed to generate roadmap PDF', 'error');
+            addToast(error?.message || 'Failed to download roadmap PDF', 'error');
         } finally {
             setIsDownloading(false);
         }
@@ -264,7 +156,7 @@ export default function Roadmaps() {
         }
     };
 
-    const toggleStepCompletion = async (idx, step) => {
+    const toggleStepCompletion = async (idx) => {
         if (!selectedDomain) return;
         const itemId = String(idx);
         const existing = roadmapProgress.find((item) => item.itemId === itemId);
@@ -286,8 +178,8 @@ export default function Roadmaps() {
     };
 
     const filteredRoadmaps = useMemo(
-        () => roadmaps.filter((roadmap) => roadmap.title.toLowerCase().includes(searchQuery.toLowerCase())),
-        [roadmaps, searchQuery]
+        () => roadmaps.filter((roadmap) => roadmap.title.toLowerCase().includes(deferredSearchQuery.toLowerCase())),
+        [roadmaps, deferredSearchQuery]
     );
     const visibleDomains = filteredRoadmaps;
     const completedCount = roadmapProgress.filter((item) => item.completed).length;
@@ -310,12 +202,10 @@ export default function Roadmaps() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4, ease: 'easeOut' }}
-            className="flex flex-col lg:flex-row gap-8 max-w-[1100px] mx-auto min-h-[calc(100vh-140px)] relative z-10 px-4 sm:px-6 lg:px-8 pb-12 pt-8"
+            className="flex flex-col lg:flex-row gap-8 max-w-[1100px] mx-auto min-h-[calc(100vh-140px)] relative z-10 px-4 sm:px-6 lg:px-8 pb-28 md:pb-12 pt-8"
         >
             <div className="w-full lg:w-[280px] shrink-0 flex flex-col gap-4 lg:sticky lg:top-28 lg:self-start lg:max-h-[calc(100vh-160px)]">
-                
                 <div className="flex flex-col gap-3 p-2 rounded-3xl border border-white/5 relative overflow-hidden lg:overflow-auto" style={{ background: 'var(--bg-surface)' }}>
-                    {/* Mobile Toggle Button */}
                     <button
                         type="button"
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -353,9 +243,9 @@ export default function Roadmaps() {
                     `}} />
 
                     <AnimatePresence>
-                        {(isMobileMenuOpen || window.innerWidth >= 1024) && (
+                        {(isMobileMenuOpen || isDesktop) && (
                             <motion.div
-                                initial={window.innerWidth < 1024 ? { height: 0, opacity: 0 } : false}
+                                initial={!isDesktop ? { height: 0, opacity: 0 } : false}
                                 animate={{ height: 'auto', opacity: 1 }}
                                 exit={{ height: 0, opacity: 0 }}
                                 className="flex flex-col gap-1.5 overflow-y-auto domain-sidebar"
@@ -375,7 +265,7 @@ export default function Roadmaps() {
                                             onClick={() => {
                                                 setSelectedDomain(domain);
                                                 setExpandedStep(null);
-                                                if (window.innerWidth < 1024) setIsMobileMenuOpen(false);
+                                                if (!isDesktop) setIsMobileMenuOpen(false);
                                             }}
                                             className={`group flex items-center gap-3 px-5 py-3.5 rounded-2xl transition-all duration-300 text-left font-bold text-sm relative overflow-hidden ${isActive ? 'text-white' : 'text-white/40 hover:bg-white/5 hover:text-white'}`}
                                         >
@@ -401,10 +291,7 @@ export default function Roadmaps() {
                         type="text"
                         placeholder="Search domain..."
                         value={searchQuery}
-                        onChange={(e) => {
-                            setSearchQuery(e.target.value);
-                            setSidebarOffset(0);
-                        }}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full bg-[var(--bg-surface)] border border-white/5 rounded-2xl py-3 pl-11 pr-10 text-xs text-white placeholder:text-white/30 focus:outline-none focus:border-[#7c3aed] transition-all"
                     />
                     <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30">
@@ -413,7 +300,6 @@ export default function Roadmaps() {
                     </svg>
                 </div>
 
-                {/* Progress Box (Hidden on mobile) */}
                 <div className="hidden lg:block p-5 rounded-3xl border border-white/5 bg-white/[0.02]">
                     <h4 className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] mb-3">Your Progress</h4>
                     <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
@@ -425,7 +311,7 @@ export default function Roadmaps() {
 
             <div className="flex-1">
                 <AnimatePresence mode="wait">
-                    {searchQuery ? (
+                    {deferredSearchQuery ? (
                         <motion.div
                             key="search-results"
                             initial={{ opacity: 0, y: 15 }}
@@ -492,7 +378,7 @@ export default function Roadmaps() {
                                     <span className="w-8 h-[1px] bg-[#7c3aed]/50" />
                                     Interactive Roadmap
                                 </div>
-                                <h1 className="text-4xl lg:text-5xl font-black text-white uppercase tracking-tighter mb-6 leading-none">
+                                <h1 className="text-2xl sm:text-3xl lg:text-5xl font-black text-white uppercase tracking-tighter mb-4 sm:mb-6 leading-tight">
                                     {selectedDomain.title}
                                 </h1>
                                 <p className="text-base lg:text-lg text-white/40 leading-relaxed max-w-2xl mb-8">
@@ -504,7 +390,7 @@ export default function Roadmaps() {
                                         disabled={isDownloading}
                                         className="px-6 py-3 rounded-2xl bg-[#7c3aed] text-white text-[11px] font-black uppercase tracking-widest hover:bg-[#6d28d9] transition-all shadow-[0_4px_20px_rgba(124,58,237,0.3)] disabled:opacity-50 active:scale-95"
                                     >
-                                        {isDownloading ? 'Generating...' : 'Download Full Plan (PDF)'}
+                                        {isDownloading ? 'Preparing...' : 'Download Full Plan (PDF)'}
                                     </button>
                                     <div className="hidden sm:flex items-center gap-2 px-4 py-3 rounded-2xl border border-white/5 bg-white/[0.02] text-[10px] font-bold text-white/30 uppercase tracking-widest">
                                         <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
@@ -527,12 +413,12 @@ export default function Roadmaps() {
                                         >
                                             <div
                                                 onClick={() => handleStepClick(idx, step)}
-                                                className="p-6 lg:p-8 flex items-center gap-6 cursor-pointer"
+                                                className="p-3 sm:p-5 lg:p-8 flex items-center gap-3 sm:gap-5 cursor-pointer"
                                             >
                                                 <div
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        toggleStepCompletion(idx, step);
+                                                        toggleStepCompletion(idx);
                                                     }}
                                                     className={`w-12 h-12 rounded-2xl border flex items-center justify-center transition-all shrink-0 ${isCompleted ? 'bg-green-500/10 border-green-500/30 text-green-400 shadow-[0_0_20px_rgba(34,197,94,0.2)]' : 'bg-white/5 border-white/10 text-white/20 group-hover:border-[#7c3aed]/30 group-hover:text-[#a855f7]'}`}
                                                 >
@@ -543,7 +429,7 @@ export default function Roadmaps() {
                                                     )}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <h3 className={`text-lg lg:text-xl font-black uppercase tracking-tight transition-colors ${isExpanded ? 'text-white' : 'text-white/60 group-hover:text-white'}`}>
+                                                    <h3 className={`text-sm sm:text-base lg:text-xl font-black uppercase tracking-tight leading-snug transition-colors ${isExpanded ? 'text-white' : 'text-white/60 group-hover:text-white'}`}>
                                                         {step.title}
                                                     </h3>
                                                     <div className="flex items-center gap-4 mt-1">
@@ -564,27 +450,27 @@ export default function Roadmaps() {
                                                         exit={{ height: 0, opacity: 0 }}
                                                         className="overflow-hidden"
                                                     >
-                                                        <div className="px-8 pb-8 pt-2 border-t border-white/5">
+                                                        <div className="px-4 sm:px-8 pb-4 sm:pb-8 pt-2 border-t border-white/5">
                                                             <div className="p-6 rounded-2xl bg-black/40 border border-white/5">
                                                                 <div className="flex items-center gap-2 text-[10px] font-black text-[#a855f7] uppercase tracking-widest mb-4">
                                                                     <span className="w-1.5 h-1.5 rounded-full bg-[#7c3aed]" />
                                                                     Technical Focus
                                                                 </div>
                                                                 <div className="space-y-2.5 mb-3">
-                                                                    {getStepTopics(step.detail).map((t, tidx) => (
-                                                                        <div key={tidx} className="flex items-start gap-2.5">
+                                                                    {getStepTopics(step.detail).map((topic, topicIndex) => (
+                                                                        <div key={topicIndex} className="flex items-start gap-2.5">
                                                                             <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#7c3aed] shrink-0" />
                                                                             <p className="text-sm lg:text-base leading-relaxed font-medium" style={{ color: '#E2E8F0' }}>
-                                                                                {t}
+                                                                                {topic}
                                                                             </p>
                                                                         </div>
                                                                     ))}
                                                                 </div>
                                                                 {step.links && step.links.length > 0 && (
                                                                     <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-white/10">
-                                                                        {step.links.map((link, lidx) => (
+                                                                        {step.links.map((link, linkIndex) => (
                                                                             <a
-                                                                                key={lidx}
+                                                                                key={linkIndex}
                                                                                 href={link.url}
                                                                                 target="_blank"
                                                                                 rel="noopener noreferrer"
