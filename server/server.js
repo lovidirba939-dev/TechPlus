@@ -21,6 +21,7 @@ import cookieParser from "cookie-parser"
 
 dotenv.config()
 const clean = (value) => (value || "").trim().replace(/^"|"$/g, "")
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 
 const requiredEnv = ["MONGO_URI", "JWT_SECRET"]
 const missingEnv = requiredEnv.filter((env) => !clean(process.env[env]))
@@ -55,10 +56,27 @@ const allowedOrigins = (() => {
   return [...origins]
 })()
 
+const allowedOriginMatchers = allowedOrigins.map((origin) => {
+  if (origin === "*") return { type: "all" }
+  if (origin.includes("*")) {
+    const regex = new RegExp(`^${escapeRegex(origin).replace(/\\\*/g, ".*")}$`)
+    return { type: "pattern", regex }
+  }
+  return { type: "exact", value: origin }
+})
+
+const isOriginAllowed = (origin) =>
+  allowedOriginMatchers.some((matcher) => {
+    if (matcher.type === "all") return true
+    if (matcher.type === "exact") return matcher.value === origin
+    if (matcher.type === "pattern") return matcher.regex.test(origin)
+    return false
+  })
+
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true)
-    if (allowedOrigins.includes(origin) || allowedOrigins.includes("*")) return callback(null, true)
+    if (isOriginAllowed(origin)) return callback(null, true)
     if (process.env.NODE_ENV !== "production") return callback(null, true)
     callback(new Error(`CORS: origin '${origin}' not allowed`))
   },

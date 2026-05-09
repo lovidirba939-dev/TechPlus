@@ -1,4 +1,4 @@
-﻿import nodemailer from "nodemailer";
+import nodemailer from "nodemailer";
 import crypto from "crypto";
 import dns from "dns";
 
@@ -8,6 +8,7 @@ export const generateOtp = () => crypto.randomInt(100000, 999999).toString();
 
 const clean = (value) => (value || "").trim().replace(/^"|"$/g, "");
 const isHttpUrl = (value) => /^https?:\/\/[^/\s]+/i.test(String(value || "").trim());
+const EMAIL_PROVIDER_TIMEOUT_MS = Number(clean(process.env.EMAIL_PROVIDER_TIMEOUT_MS)) || 20000;
 
 const resolveClientUrl = (overrideUrl) => {
   const fromOverride = clean(overrideUrl);
@@ -35,6 +36,11 @@ const forceIpv4Lookup = (hostname, _options, callback) => {
   });
 };
 
+const getConfiguredSenderAddress = () => clean(process.env.EMAIL_FROM) || clean(process.env.EMAIL);
+const buildFromAddress = () => getConfiguredSenderAddress() || "no-reply@techplus.dev";
+const smtpEnabled = () => Boolean(clean(process.env.EMAIL) && clean(process.env.EMAIL_PASS));
+const brevoEnabled = () => Boolean(clean(process.env.BREVO_API_KEY) && getConfiguredSenderAddress());
+
 const baseSmtpOptions = {
   host: "smtp.gmail.com",
   auth: {
@@ -45,15 +51,15 @@ const baseSmtpOptions = {
     servername: "smtp.gmail.com",
     rejectUnauthorized: false
   },
-  connectionTimeout: 15000,
-  greetingTimeout: 12000,
-  socketTimeout: 20000,
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
+  socketTimeout: 15000,
   lookup: forceIpv4Lookup
 };
 
 const smtpAttempts = [
-  { port: 465, secure: true },
-  { port: 587, secure: false }
+  { port: 587, secure: false },
+  { port: 465, secure: true }
 ];
 
 async function sendWithSmtpFallback(mailOptions) {
@@ -82,9 +88,81 @@ async function sendWithSmtpFallback(mailOptions) {
   throw lastError;
 }
 
+async function sendWithBrevo({ to, subject, html }) {
+  const apiKey = clean(process.env.BREVO_API_KEY);
+  const senderEmail = getConfiguredSenderAddress();
+  const senderName = clean(process.env.EMAIL_FROM_NAME) || "TechPlus";
+
+  if (!apiKey || !senderEmail) {
+    throw new Error("Brevo config is missing (BREVO_API_KEY + EMAIL_FROM)");
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), EMAIL_PROVIDER_TIMEOUT_MS);
+
+  try {
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        "content-type": "application/json",
+        "api-key": apiKey
+      },
+      body: JSON.stringify({
+        sender: { name: senderName, email: senderEmail },
+        to: [{ email: to }],
+        subject,
+        htmlContent: html
+      }),
+      signal: controller.signal
+    });
+
+    if (!response.ok) {
+      const bodyText = await response.text();
+      throw new Error(`Brevo API failed (${response.status}): ${bodyText.slice(0, 180)}`);
+    }
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function sendEmail(mailOptions) {
+  const provider = clean(process.env.EMAIL_PROVIDER).toLowerCase() || "auto";
+  let brevoError = null;
+
+  if ((provider === "brevo" || provider === "auto") && brevoEnabled()) {
+    try {
+      await sendWithBrevo(mailOptions);
+      return;
+    } catch (error) {
+      brevoError = error;
+      if (provider === "brevo") throw error;
+    }
+  }
+
+  if ((provider === "smtp" || provider === "auto") && smtpEnabled()) {
+    try {
+      await sendWithSmtpFallback({
+        from: `"TechPlus" <${buildFromAddress()}>`,
+        to: mailOptions.to,
+        subject: mailOptions.subject,
+        html: mailOptions.html
+      });
+      return;
+    } catch (smtpError) {
+      if (brevoError) {
+        throw new Error(`Brevo + SMTP failed: ${brevoError.message} | ${smtpError.message}`);
+      }
+      throw smtpError;
+    }
+  }
+
+  if (brevoError) throw brevoError;
+  throw new Error("No email provider configured. Set SMTP (EMAIL + EMAIL_PASS) or Brevo (BREVO_API_KEY + EMAIL_FROM).");
+}
+
 export const sendOtpEmail = async (email, otp) => {
-  await sendWithSmtpFallback({
-    from: `"TechPlus" <${clean(process.env.EMAIL)}>` ,
+  await sendEmail({
     to: email,
     subject: "Your OTP - TechPlus",
     html: `
@@ -103,8 +181,7 @@ export const sendOtpEmail = async (email, otp) => {
 export const sendResetEmail = async (email, resetToken, clientUrlOverride = "") => {
   const resetLink = `${resolveClientUrl(clientUrlOverride)}/password-reset?token=${resetToken}`;
 
-  await sendWithSmtpFallback({
-    from: `"TechPlus" <${clean(process.env.EMAIL)}>` ,
+  await sendEmail({
     to: email,
     subject: "Password Reset - TechPlus",
     html: `

@@ -15,6 +15,16 @@ const apiClient = axios.create({
 apiClient.interceptors.response.use(
   (response) => response.data,
   (error) => {
+    if (!error?.response) {
+      const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
+      return Promise.reject({
+        success: false,
+        message: offline
+          ? 'No internet connection. Check your network and retry.'
+          : 'Server is unreachable right now. Please try again in a few seconds.'
+      });
+    }
+
     const status = error.response?.status;
     const reqUrl = error.config?.url || '';
     const skip401Redirect =

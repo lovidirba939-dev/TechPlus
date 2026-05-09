@@ -7,14 +7,16 @@ import { generateOtp, sendOtpEmail, sendResetEmail } from "../emailVerify/sendOt
 import { buildAuthCookieOptions } from "../utils/cookies.js"
 
 function hasEmailConfig() {
-  return Boolean(process.env.EMAIL && process.env.EMAIL_PASS)
+  const hasSmtp = Boolean(process.env.EMAIL && process.env.EMAIL_PASS)
+  const hasBrevo = Boolean(process.env.BREVO_API_KEY && (process.env.EMAIL_FROM || process.env.EMAIL))
+  return hasSmtp || hasBrevo
 }
 
 const normalizeEmail = (value) => String(value || "").trim().toLowerCase()
-const EMAIL_TIMEOUT_MS = 25000
+const EMAIL_TIMEOUT_MS = Number(process.env.EMAIL_TIMEOUT_MS) || 15000
 const isMailTransportError = (error) => {
   const raw = `${error?.message || ""} ${error?.code || ""}`
-  return /ENETUNREACH|ETIMEDOUT|EAI_AGAIN|ECONNREFUSED|ESOCKET/i.test(raw)
+  return /ENETUNREACH|ETIMEDOUT|EAI_AGAIN|ECONNREFUSED|ESOCKET|timeout|network|aborted/i.test(raw)
 }
 
 const toClientError = (error, fallback) => {
@@ -312,7 +314,7 @@ export const forgotPassword = async (req, res) => {
     })
 
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message })
+    res.status(500).json({ success: false, message: toClientError(error, "Failed to send reset email") })
   }
 }
 
