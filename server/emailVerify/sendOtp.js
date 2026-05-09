@@ -27,9 +27,9 @@ const createTransporter = () => {
 
   transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
-    port: 587,
-    secure: false,
-    pool: false, // disable pooling so each message gets a fresh connection
+    port: 465,       // 465 (SSL) works on Render; 587 is blocked on free tier
+    secure: true,    // true for port 465
+    pool: false,
     auth: {
       user: clean(process.env.EMAIL),
       pass: clean(process.env.EMAIL_PASS)
@@ -37,9 +37,9 @@ const createTransporter = () => {
     tls: {
       rejectUnauthorized: false
     },
-    connectionTimeout: 15000,  // 15 s to establish connection
-    greetingTimeout: 10000,    // 10 s for SMTP greeting
-    socketTimeout: 20000       // 20 s idle socket timeout
+    connectionTimeout: 20000,
+    greetingTimeout: 15000,
+    socketTimeout: 25000
   });
 
   return transporter;
