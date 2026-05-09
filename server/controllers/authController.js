@@ -11,7 +11,7 @@ function hasEmailConfig() {
 }
 
 const normalizeEmail = (value) => String(value || "").trim().toLowerCase()
-const EMAIL_TIMEOUT_MS = 12000
+const EMAIL_TIMEOUT_MS = 25000
 
 async function sendEmailWithTimeout(task) {
   return Promise.race([
