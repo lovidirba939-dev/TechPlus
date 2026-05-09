@@ -12,6 +12,17 @@ function hasEmailConfig() {
 
 const normalizeEmail = (value) => String(value || "").trim().toLowerCase()
 const EMAIL_TIMEOUT_MS = 25000
+const isMailTransportError = (error) => {
+  const raw = `${error?.message || ""} ${error?.code || ""}`
+  return /ENETUNREACH|ETIMEDOUT|EAI_AGAIN|ECONNREFUSED|ESOCKET/i.test(raw)
+}
+
+const toClientError = (error, fallback) => {
+  if (isMailTransportError(error)) {
+    return "Email service is temporarily unavailable. Please try again in a minute."
+  }
+  return error?.message || fallback
+}
 const maskEmail = (email) => {
   const [name = "", domain = ""] = String(email || "").split("@")
   if (!name || !domain) return email
@@ -113,7 +124,7 @@ export const register = async (req, res) => {
     })
 
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message })
+    res.status(500).json({ success: false, message: toClientError(error, "Registration failed") })
   }
 }
 
@@ -167,7 +178,7 @@ export const verifyOtp = async (req, res) => {
     })
 
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message })
+    res.status(500).json({ success: false, message: toClientError(error, "OTP verification failed") })
   }
 }
 
@@ -203,7 +214,7 @@ export const resendOtp = async (req, res) => {
     })
 
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message })
+    res.status(500).json({ success: false, message: toClientError(error, "Failed to resend OTP") })
   }
 }
 
@@ -247,7 +258,7 @@ export const login = async (req, res) => {
     })
 
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message })
+    res.status(500).json({ success: false, message: toClientError(error, "Login failed") })
   }
 }
 
