@@ -8,11 +8,13 @@ const configuredBase = cleanBase(
 );
 
 const runtimeOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+const useSameOriginApiFallback =
+  String(import.meta.env.VITE_USE_SAME_ORIGIN_API || 'false').toLowerCase() === 'true';
 
 const CANDIDATE_BASES = [
   configuredBase,
   isProd ? cleanBase(import.meta.env.VITE_RENDER_API_URL || 'https://techplus-backend.onrender.com') : '',
-  isProd ? cleanBase(`${runtimeOrigin}/api`) : '',
+  isProd && useSameOriginApiFallback ? cleanBase(`${runtimeOrigin}/api`) : '',
   !isProd ? 'http://localhost:5000' : ''
 ].filter(Boolean);
 
@@ -48,6 +50,19 @@ apiClient.interceptors.response.use(
       const canRetry = !originalConfig.__networkRetryAttempted;
       if (canRetry && moveToNextBase()) {
         originalConfig.__networkRetryAttempted = true;
+        originalConfig.baseURL = activeBaseURL;
+        return apiClient.request(originalConfig);
+      }
+    }
+    
+    if (error?.response) {
+      const status = Number(error.response.status);
+      const canRetryOnStatus =
+        (status === 404 || status === 405 || status === 502 || status === 503 || status === 504) &&
+        !originalConfig.__statusRetryAttempted;
+
+      if (canRetryOnStatus && moveToNextBase()) {
+        originalConfig.__statusRetryAttempted = true;
         originalConfig.baseURL = activeBaseURL;
         return apiClient.request(originalConfig);
       }
