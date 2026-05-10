@@ -13,7 +13,7 @@ function hasEmailConfig() {
 }
 
 const normalizeEmail = (value) => String(value || "").trim().toLowerCase()
-const EMAIL_TIMEOUT_MS = Number(process.env.EMAIL_TIMEOUT_MS) || 30000
+const EMAIL_TIMEOUT_MS = Number(process.env.EMAIL_TIMEOUT_MS) || 90000
 const isMailTransportError = (error) => {
   const raw = `${error?.message || ""} ${error?.code || ""}`
   return /ENETUNREACH|ETIMEDOUT|EAI_AGAIN|ECONNREFUSED|ESOCKET|timeout|network|aborted/i.test(raw)
@@ -126,6 +126,7 @@ export const register = async (req, res) => {
     })
 
   } catch (error) {
+    console.error("[Auth] Register email error:", error.message, error.code || "")
     res.status(500).json({ success: false, message: toClientError(error, "Registration failed") })
   }
 }
@@ -216,6 +217,7 @@ export const resendOtp = async (req, res) => {
     })
 
   } catch (error) {
+    console.error("[Auth] Resend OTP error:", error.message, error.code || "")
     res.status(500).json({ success: false, message: toClientError(error, "Failed to resend OTP") })
   }
 }
@@ -314,6 +316,7 @@ export const forgotPassword = async (req, res) => {
     })
 
   } catch (error) {
+    console.error("[Auth] ForgotPassword error:", error.message, error.code || "", error.responseCode || "")
     res.status(500).json({ success: false, message: toClientError(error, "Failed to send reset email") })
   }
 }

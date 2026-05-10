@@ -28,30 +28,49 @@ const buildFromAddress = () => getConfiguredSenderAddress() || "no-reply@techplu
 const smtpEnabled = () => Boolean(clean(process.env.EMAIL) && clean(process.env.EMAIL_PASS));
 const brevoEnabled = () => Boolean(clean(process.env.BREVO_API_KEY) && getConfiguredSenderAddress());
 
-// Use nodemailer's built-in 'gmail' service — it handles host, port, TLS,
-// and DNS automatically. This works reliably on cloud platforms like Render
-// where manual host + custom DNS lookup can fail.
-function createGmailTransporter() {
-  return nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: clean(process.env.EMAIL),
-      pass: clean(process.env.EMAIL_PASS)
-    },
+// Build multiple transport strategies to maximize deliverability on cloud
+// platforms like Render where some SMTP approaches may fail.
+function getTransportConfigs() {
+  const auth = {
+    user: clean(process.env.EMAIL),
+    pass: clean(process.env.EMAIL_PASS)
+  };
+  const timeouts = {
     connectionTimeout: 30000,
     greetingTimeout: 30000,
     socketTimeout: 30000
-  });
+  };
+
+  return [
+    // Strategy 1: nodemailer built-in 'gmail' service
+    { label: "gmail-service", config: { service: "gmail", auth, ...timeouts } },
+    // Strategy 2: manual STARTTLS on port 587
+    { label: "smtp-587", config: { host: "smtp.gmail.com", port: 587, secure: false, auth, tls: { rejectUnauthorized: false }, ...timeouts } },
+    // Strategy 3: direct TLS on port 465
+    { label: "smtp-465", config: { host: "smtp.gmail.com", port: 465, secure: true, auth, tls: { rejectUnauthorized: false }, ...timeouts } }
+  ];
 }
 
 async function sendWithSmtp(mailOptions) {
-  const transporter = createGmailTransporter();
-  try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log("[Email] Sent via Gmail SMTP:", info.messageId);
-  } finally {
-    try { transporter.close(); } catch { /* ignore */ }
+  const strategies = getTransportConfigs();
+  let lastError;
+
+  for (const { label, config } of strategies) {
+    const transporter = nodemailer.createTransport(config);
+    try {
+      console.log(`[Email] Trying ${label}...`);
+      const info = await transporter.sendMail(mailOptions);
+      console.log(`[Email] Sent via ${label}:`, info.messageId);
+      return; // success — stop trying
+    } catch (error) {
+      console.error(`[Email] ${label} failed:`, error.message);
+      lastError = error;
+    } finally {
+      try { transporter.close(); } catch { /* ignore */ }
+    }
   }
+
+  throw lastError;
 }
 
 async function sendWithBrevo({ to, subject, html }) {
