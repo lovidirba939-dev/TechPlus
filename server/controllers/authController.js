@@ -6,53 +6,14 @@ import { User } from "../models/userModel.js"
 import { generateOtp, sendOtpEmail, sendResetEmail } from "../emailVerify/sendOtp.js"
 import { buildAuthCookieOptions } from "../utils/cookies.js"
 
-const cleanEnv = (value) =>
-  String(value || "")
-    .replace(/\\n|\\r/g, "")
-    .replace(/\r|\n/g, "")
-    .trim()
-    .replace(/^"|"$/g, "")
-
 function hasEmailConfig() {
-  const hasSmtp = Boolean(cleanEnv(process.env.EMAIL) && cleanEnv(process.env.EMAIL_PASS))
-  const hasBrevo = Boolean(cleanEnv(process.env.BREVO_API_KEY) && (cleanEnv(process.env.EMAIL_FROM) || cleanEnv(process.env.EMAIL)))
-  return hasSmtp || hasBrevo
-}
-
-const normalizeEmail = (value) => String(value || "").trim().toLowerCase()
-const EMAIL_TIMEOUT_MS = Number(process.env.EMAIL_TIMEOUT_MS) || 15000
-const isMailTransportError = (error) => {
-  const raw = `${error?.message || ""} ${error?.code || ""}`
-  return /ENETUNREACH|ETIMEDOUT|EAI_AGAIN|ECONNREFUSED|ESOCKET|timeout|network|aborted/i.test(raw)
-}
-
-const toClientError = (error, fallback) => {
-  if (isMailTransportError(error)) {
-    return "Email service is temporarily unavailable. Please try again in a minute."
-  }
-  return error?.message || fallback
-}
-const maskEmail = (email) => {
-  const [name = "", domain = ""] = String(email || "").split("@")
-  if (!name || !domain) return email
-  const prefix = name.slice(0, 2)
-  return `${prefix}${"*".repeat(Math.max(name.length - 2, 1))}@${domain}`
-}
-
-async function sendEmailWithTimeout(task) {
-  return Promise.race([
-    task,
-    new Promise((_, reject) => {
-      setTimeout(() => reject(new Error("Email service timeout. Please try again.")), EMAIL_TIMEOUT_MS)
-    })
-  ])
+  return Boolean(process.env.EMAIL && process.env.EMAIL_PASS)
 }
 
 // ================== REGISTER ==================
 export const register = async (req, res) => {
   try {
-    const { username, password, confirmPassword } = req.body
-    const email = normalizeEmail(req.body.email)
+    const { username, email, password, confirmPassword } = req.body
 
     // Validation
     if (!username || !email || !password || !confirmPassword) {
@@ -82,27 +43,6 @@ export const register = async (req, res) => {
     // Check if user exists
     const existingUser = await User.findOne({ $or: [{ email }, { username }] })
     if (existingUser) {
-      if (existingUser.email === email && !existingUser.isVerified) {
-        const hashedPassword = await bcrypt.hash(password, 10)
-        const otp = generateOtp()
-        const otpExpires = new Date(Date.now() + 10 * 60 * 1000)
-
-        existingUser.username = username
-        existingUser.password = hashedPassword
-        existingUser.otp = otp
-        existingUser.otpExpires = otpExpires
-        await existingUser.save()
-
-        if (hasEmailConfig()) {
-          await sendEmailWithTimeout(sendOtpEmail(email, otp))
-        }
-
-        return res.status(200).json({
-          success: true,
-          message: hasEmailConfig() ? "Account exists but unverified. New OTP sent." : "OTP regenerated in development mode.",
-          ...(hasEmailConfig() ? {} : { devOtp: otp })
-        })
-      }
       return res.status(400).json({ success: false, message: "Email or username already registered" })
     }
 
@@ -112,7 +52,7 @@ export const register = async (req, res) => {
     const otp = generateOtp()
     const otpExpires = new Date(Date.now() + 10 * 60 * 1000) // 10 min
 
-    await User.create({
+    const user = await User.create({
       username,
       email,
       password: hashedPassword,
@@ -123,7 +63,7 @@ export const register = async (req, res) => {
 
     // Only attempt to send email if config is present; skip gracefully in dev mode
     if (hasEmailConfig()) {
-      await sendEmailWithTimeout(sendOtpEmail(email, otp))
+      await sendOtpEmail(email, otp)
     }
 
     res.status(201).json({
@@ -133,16 +73,14 @@ export const register = async (req, res) => {
     })
 
   } catch (error) {
-    console.error("[Auth] Register email error:", error.message, error.code || "")
-    res.status(500).json({ success: false, message: toClientError(error, "Registration failed") })
+    res.status(500).json({ success: false, message: error.message })
   }
 }
 
 // ================== VERIFY OTP ==================
 export const verifyOtp = async (req, res) => {
   try {
-    const email = normalizeEmail(req.body.email)
-    const { otp } = req.body
+    const { email, otp } = req.body
 
     if (!email || !otp) {
       return res.status(400).json({ success: false, message: "Email and OTP are required" })
@@ -188,14 +126,14 @@ export const verifyOtp = async (req, res) => {
     })
 
   } catch (error) {
-    res.status(500).json({ success: false, message: toClientError(error, "OTP verification failed") })
+    res.status(500).json({ success: false, message: error.message })
   }
 }
 
 // ================== RESEND OTP ==================
 export const resendOtp = async (req, res) => {
   try {
-    const email = normalizeEmail(req.body.email)
+    const { email } = req.body
 
     if (!email) {
       return res.status(400).json({ success: false, message: "Email is required" })
@@ -214,7 +152,7 @@ export const resendOtp = async (req, res) => {
 
     // Only attempt to send email if config is present
     if (hasEmailConfig()) {
-      await sendEmailWithTimeout(sendOtpEmail(email, otp))
+      await sendOtpEmail(email, otp)
     }
 
     res.status(200).json({
@@ -224,16 +162,14 @@ export const resendOtp = async (req, res) => {
     })
 
   } catch (error) {
-    console.error("[Auth] Resend OTP error:", error.message, error.code || "")
-    res.status(500).json({ success: false, message: toClientError(error, "Failed to resend OTP") })
+    res.status(500).json({ success: false, message: error.message })
   }
 }
 
 // ================== LOGIN ==================
 export const login = async (req, res) => {
   try {
-    const email = normalizeEmail(req.body.email)
-    const { password } = req.body
+    const { email, password } = req.body
 
     if (!email || !password) {
       return res.status(400).json({ success: false, message: "Email and password are required" })
@@ -269,7 +205,7 @@ export const login = async (req, res) => {
     })
 
   } catch (error) {
-    res.status(500).json({ success: false, message: toClientError(error, "Login failed") })
+    res.status(500).json({ success: false, message: error.message })
   }
 }
 
@@ -287,7 +223,7 @@ export const logout = async (req, res) => {
 // ================== FORGOT PASSWORD ==================
 export const forgotPassword = async (req, res) => {
   try {
-    const email = normalizeEmail(req.body.email)
+    const { email } = req.body
 
     if (!email) {
       return res.status(400).json({ success: false, message: "Email is required" })
@@ -308,32 +244,19 @@ export const forgotPassword = async (req, res) => {
 
     console.log(`[Auth] ForgotPassword request for: ${email}. Email config detected: ${hasEmailConfig()}`);
 
-    let emailSent = false
+    // Only send email if config is present
     if (hasEmailConfig()) {
-      const originFromClient = String(req.body?.clientOrigin || "").trim()
-      const originFromHeader = String(req.headers.origin || "").trim()
-      try {
-        await sendEmailWithTimeout(
-          sendResetEmail(email, resetToken, originFromClient || originFromHeader)
-        )
-        emailSent = true
-      } catch (emailError) {
-        console.error("[Auth] ForgotPassword email failed, using token fallback:", emailError.message, emailError.code || "", emailError.responseCode || "")
-      }
+      await sendResetEmail(email, resetToken)
     }
 
     res.status(200).json({
       success: true,
-      message: emailSent
-        ? "Password reset email sent"
-        : "Email service unavailable. Use the reset link shown below.",
-      recipientHint: maskEmail(email),
-      ...(emailSent ? {} : { devResetToken: resetToken })
+      message: hasEmailConfig() ? "Password reset email sent" : "Password reset token generated in development mode",
+      ...(hasEmailConfig() ? {} : { devResetToken: resetToken })
     })
 
   } catch (error) {
-    console.error("[Auth] ForgotPassword error:", error.message, error.code || "", error.responseCode || "")
-    res.status(500).json({ success: false, message: toClientError(error, "Failed to send reset email") })
+    res.status(500).json({ success: false, message: error.message })
   }
 }
 

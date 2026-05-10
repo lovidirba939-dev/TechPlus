@@ -1,87 +1,20 @@
 import axios from 'axios';
 
-const cleanBase = (value) => {
-  let base = String(value || '').trim().replace(/\/$/, '');
-  if (/\/api$/i.test(base)) base = base.replace(/\/api$/i, '');
-  return base;
-};
-const isProd = typeof import.meta !== 'undefined' && import.meta.env?.PROD;
-
-const configuredBase = cleanBase(
-  import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL
-);
-
-const runtimeOrigin = typeof window !== 'undefined' ? window.location.origin : '';
-const useSameOriginApiFallback =
-  String(import.meta.env.VITE_USE_SAME_ORIGIN_API || 'false').toLowerCase() === 'true';
-
-const CANDIDATE_BASES = [
-  configuredBase,
-  isProd ? cleanBase(import.meta.env.VITE_RENDER_API_URL || 'https://techplus-gaya.onrender.com') : '',
-  isProd && useSameOriginApiFallback ? cleanBase(`${runtimeOrigin}/api`) : '',
-  !isProd ? 'http://localhost:5000' : ''
-].filter(Boolean);
-
-const API_BASE_URL = CANDIDATE_BASES[0];
-
-console.log('[TechPlus] API Base URL:', API_BASE_URL);
+const API_BASE_URL = (
+  import.meta.env.VITE_API_URL ||
+  import.meta.env.VITE_API_BASE_URL ||
+  'http://localhost:5000'
+).replace(/\/$/, '');
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
-  withCredentials: true,
-  timeout: 60000
+  withCredentials: true
 });
-
-let activeBaseURL = API_BASE_URL;
-let failoverIndex = 0;
-
-function moveToNextBase() {
-  if (failoverIndex >= CANDIDATE_BASES.length - 1) return false;
-  failoverIndex += 1;
-  activeBaseURL = CANDIDATE_BASES[failoverIndex];
-  apiClient.defaults.baseURL = activeBaseURL;
-  console.warn('[TechPlus] Switched API Base URL to:', activeBaseURL);
-  return true;
-}
 
 apiClient.interceptors.response.use(
   (response) => response.data,
-  async (error) => {
-    const originalConfig = error?.config || {};
-
-    if (!error?.response) {
-      const canRetry = !originalConfig.__networkRetryAttempted;
-      if (canRetry && moveToNextBase()) {
-        originalConfig.__networkRetryAttempted = true;
-        originalConfig.baseURL = activeBaseURL;
-        return apiClient.request(originalConfig);
-      }
-    }
-    
-    if (error?.response) {
-      const status = Number(error.response.status);
-      const canRetryOnStatus =
-        (status === 404 || status === 405 || status === 502 || status === 503 || status === 504) &&
-        !originalConfig.__statusRetryAttempted;
-
-      if (canRetryOnStatus && moveToNextBase()) {
-        originalConfig.__statusRetryAttempted = true;
-        originalConfig.baseURL = activeBaseURL;
-        return apiClient.request(originalConfig);
-      }
-    }
-
-    if (!error?.response) {
-      const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
-      return Promise.reject({
-        success: false,
-        message: offline
-          ? 'No internet connection. Check your network and retry.'
-          : 'Server is unreachable right now. Please try again in a few seconds.'
-      });
-    }
-
+  (error) => {
     const status = error.response?.status;
     const reqUrl = error.config?.url || '';
     const skip401Redirect =
@@ -113,8 +46,8 @@ export const authAPI = {
     apiClient.post('/api/auth/login', { email, password }),
   logout: () =>
     apiClient.post('/api/auth/logout'),
-  forgotPassword: (email, clientOrigin) =>
-    apiClient.post('/api/auth/forgot-password', { email, clientOrigin }),
+  forgotPassword: (email) =>
+    apiClient.post('/api/auth/forgot-password', { email }),
   resetPassword: (token, password, confirmPassword) =>
     apiClient.post('/api/auth/reset-password', { token, password, confirmPassword })
 };
