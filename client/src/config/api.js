@@ -10,7 +10,7 @@ const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
-  timeout: 20000
+  timeout: 90000
 });
 
 apiClient.interceptors.response.use(
@@ -139,5 +139,4 @@ export const hackathonAPI = {
 };
 
 export default apiClient;
-
 

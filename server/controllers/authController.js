@@ -17,7 +17,7 @@ function hasEmailConfig() {
   return Boolean(cleanEnv(process.env.EMAIL) && cleanEnv(process.env.EMAIL_PASS))
 }
 
-const EMAIL_TIMEOUT_MS = Number(process.env.EMAIL_TIMEOUT_MS) || 15000
+const EMAIL_TIMEOUT_MS = Number(process.env.EMAIL_TIMEOUT_MS) || 65000
 async function sendEmailWithTimeout(task) {
   return Promise.race([
     task,
@@ -80,7 +80,7 @@ export const register = async (req, res) => {
 
     // Only attempt to send email if config is present; skip gracefully in dev mode
     if (hasEmailConfig()) {
-      await sendOtpEmail(email, otp)
+      await sendEmailWithTimeout(sendOtpEmail(email, otp))
     }
 
     res.status(201).json({
@@ -169,7 +169,7 @@ export const resendOtp = async (req, res) => {
 
     // Only attempt to send email if config is present
     if (hasEmailConfig()) {
-      await sendOtpEmail(email, otp)
+      await sendEmailWithTimeout(sendOtpEmail(email, otp))
     }
 
     res.status(200).json({
