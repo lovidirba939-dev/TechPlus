@@ -138,7 +138,9 @@ async function sendWithHttpRelay(mailOptions) {
         from: mailOptions.from,
         to: mailOptions.to,
         subject: mailOptions.subject,
-        html: mailOptions.html
+        html: mailOptions.html,
+        smtpUser: auth().user,
+        smtpPass: auth().pass
       }),
       signal: controller.signal
     })
