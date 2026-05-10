@@ -18,7 +18,7 @@ function hasEmailConfig() {
 }
 
 const isProduction = cleanEnv(process.env.NODE_ENV) === "production"
-const EMAIL_TIMEOUT_MS = Number(process.env.EMAIL_TIMEOUT_MS) || 25000
+const EMAIL_TIMEOUT_MS = Number(process.env.EMAIL_TIMEOUT_MS) || 15000
 async function sendEmailWithTimeout(task) {
   return Promise.race([
     task,
@@ -30,6 +30,12 @@ async function sendEmailWithTimeout(task) {
 
 const toEmailErrorMessage = (error) => {
   const raw = `${error?.message || ""} ${error?.code || ""}`
+  if (/relay authentication failed|Unauthorized email relay request/i.test(raw)) {
+    return "Email relay authentication failed. Please contact support and retry."
+  }
+  if (/Email relay is not configured/i.test(raw)) {
+    return "Email relay is not configured. Please contact support and retry."
+  }
   if (/timeout|ETIMEDOUT|ECONNECTION|ENETUNREACH|ECONNREFUSED/i.test(raw)) {
     return "Email service connection timeout. Please try again shortly."
   }

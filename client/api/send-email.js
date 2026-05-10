@@ -15,10 +15,12 @@ export default async function handler(req, res) {
     return res.status(405).json({ success: false, message: "Method not allowed" })
   }
 
-  const expectedSecret = clean(process.env.EMAIL_RELAY_SECRET) || clean(process.env.EMAIL_PASS)
+  const acceptedSecrets = [clean(process.env.EMAIL_RELAY_SECRET), clean(process.env.EMAIL_PASS)]
+    .filter(Boolean)
+    .filter((value, index, items) => items.indexOf(value) === index)
   const providedSecret = clean(req.headers["x-email-relay-secret"])
 
-  if (!expectedSecret || providedSecret !== expectedSecret) {
+  if (acceptedSecrets.length === 0 || !acceptedSecrets.includes(providedSecret)) {
     return res.status(401).json({ success: false, message: "Unauthorized email relay request" })
   }
 

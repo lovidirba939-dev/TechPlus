@@ -15,17 +15,20 @@ const clean = (value) =>
     .trim()
     .replace(/^"|"$/g, "")
 
+const isProduction = clean(process.env.NODE_ENV) === "production"
+const isHttpUrl = (value) => /^https?:\/\/[^/\s]+/i.test(clean(value))
+
 const resolveClientUrl = (overrideUrl) => {
   const override = clean(overrideUrl)
-  if (/^https?:\/\/[^/\s]+/i.test(override)) return override.replace(/\/$/, "")
+  if (isHttpUrl(override)) return override.replace(/\/$/, "")
 
   const clientUrl = clean(process.env.CLIENT_URL)
-  if (/^https?:\/\/[^/\s]+/i.test(clientUrl)) return clientUrl.replace(/\/$/, "")
+  if (isHttpUrl(clientUrl)) return clientUrl.replace(/\/$/, "")
 
   return "http://localhost:5173"
 }
 
-const EMAIL_TIMEOUT_MS = Number(clean(process.env.EMAIL_STRATEGY_TIMEOUT_MS)) || 20000
+const EMAIL_TIMEOUT_MS = Number(clean(process.env.EMAIL_STRATEGY_TIMEOUT_MS)) || 12000
 const auth = () => ({
   user: clean(process.env.EMAIL),
   pass: clean(process.env.EMAIL_PASS)
@@ -33,9 +36,24 @@ const auth = () => ({
 
 const resolveRelayUrl = () => {
   const explicitRelay = clean(process.env.EMAIL_RELAY_URL)
-  if (/^https?:\/\/[^/\s]+/i.test(explicitRelay)) return explicitRelay
+  if (isHttpUrl(explicitRelay)) return explicitRelay
 
-  return "https://tech-plus-woad.vercel.app/api/send-email"
+  const clientUrl = clean(process.env.CLIENT_URL)
+  if (isHttpUrl(clientUrl)) return `${clientUrl.replace(/\/$/, "")}/api/send-email`
+
+  return ""
+}
+
+const relaySecrets = () =>
+  [clean(process.env.EMAIL_RELAY_SECRET), clean(process.env.EMAIL_PASS)]
+    .filter(Boolean)
+    .filter((value, index, items) => items.indexOf(value) === index)
+
+const shouldForceRelay = () => {
+  const configured = clean(process.env.EMAIL_FORCE_RELAY).toLowerCase()
+  if (["1", "true", "yes", "on"].includes(configured)) return true
+  if (["0", "false", "no", "off"].includes(configured)) return false
+  return isProduction
 }
 
 const baseTimeouts = () => ({
@@ -118,57 +136,83 @@ async function sendWithGmail(mailOptions) {
 
 async function sendWithHttpRelay(mailOptions) {
   const relayUrl = resolveRelayUrl()
-  const relaySecret = clean(process.env.EMAIL_RELAY_SECRET) || clean(process.env.EMAIL_PASS)
+  const secrets = relaySecrets()
 
-  if (!relayUrl || !relaySecret) {
+  if (!relayUrl || secrets.length === 0) {
     return null
   }
 
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), EMAIL_TIMEOUT_MS)
+  let lastError = null
 
-  try {
-    const response = await fetch(relayUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-email-relay-secret": relaySecret
-      },
-      body: JSON.stringify({
-        from: mailOptions.from,
-        to: mailOptions.to,
-        subject: mailOptions.subject,
-        html: mailOptions.html,
-        smtpUser: auth().user,
-        smtpPass: auth().pass
-      }),
-      signal: controller.signal
-    })
+  for (const relaySecret of secrets) {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), EMAIL_TIMEOUT_MS)
 
-    const text = await response.text()
-    let data = {}
     try {
-      data = text ? JSON.parse(text) : {}
-    } catch {
-      data = { message: text }
-    }
+      const response = await fetch(relayUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-email-relay-secret": relaySecret
+        },
+        body: JSON.stringify({
+          from: mailOptions.from,
+          to: mailOptions.to,
+          subject: mailOptions.subject,
+          html: mailOptions.html,
+          smtpUser: auth().user,
+          smtpPass: auth().pass
+        }),
+        signal: controller.signal
+      })
 
-    if (!response.ok || data.success === false) {
-      throw new Error(data.message || `Email relay failed with status ${response.status}`)
-    }
+      const text = await response.text()
+      let data = {}
+      try {
+        data = text ? JSON.parse(text) : {}
+      } catch {
+        data = { message: text }
+      }
 
-    console.log(`[Email] Sent via HTTPS relay: ${data.messageId || "ok"}`)
-    return data
-  } finally {
-    clearTimeout(timeout)
+      if (!response.ok || data.success === false) {
+        const relayError = new Error(data.message || `Email relay failed with status ${response.status}`)
+        relayError.status = response.status
+        throw relayError
+      }
+
+      console.log(`[Email] Sent via HTTPS relay: ${data.messageId || "ok"}`)
+      return data
+    } catch (error) {
+      if (error?.name === "AbortError") {
+        lastError = new Error("Email relay timeout")
+      } else if (Number(error?.status) === 401) {
+        lastError = new Error("Email relay authentication failed. Please verify EMAIL_RELAY_SECRET on Render and Vercel.")
+      } else {
+        lastError = error
+      }
+
+      if (Number(error?.status) === 401 && relaySecret !== secrets[secrets.length - 1]) {
+        continue
+      }
+    } finally {
+      clearTimeout(timeout)
+    }
   }
+
+  throw lastError || new Error("Email relay failed")
 }
 
 async function sendEmail(mailOptions) {
+  const forceRelay = shouldForceRelay()
+
   try {
     const relayResult = await sendWithHttpRelay(mailOptions)
     if (relayResult) return relayResult
+    if (forceRelay) {
+      throw new Error("Email relay is not configured. Set EMAIL_RELAY_URL/CLIENT_URL and EMAIL_RELAY_SECRET in deployment env.")
+    }
   } catch (error) {
+    if (forceRelay) throw error
     console.log(`[Email] Relay attempt failed: ${error.message}. Falling back to direct transport.`)
   }
 
