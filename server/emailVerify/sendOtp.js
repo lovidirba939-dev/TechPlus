@@ -3,7 +3,12 @@ import crypto from "crypto";
 
 export const generateOtp = () => crypto.randomInt(100000, 999999).toString();
 
-const clean = (value) => (value || "").trim().replace(/^"|"$/g, "");
+const clean = (value) =>
+  String(value || "")
+    .replace(/\\n|\\r/g, "")
+    .replace(/\r|\n/g, "")
+    .trim()
+    .replace(/^"|"$/g, "");
 const isHttpUrl = (value) => /^https?:\/\/[^/\s]+/i.test(String(value || "").trim());
 const EMAIL_PROVIDER_TIMEOUT_MS = Number(clean(process.env.EMAIL_PROVIDER_TIMEOUT_MS)) || 30000;
 

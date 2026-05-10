@@ -6,9 +6,16 @@ import { User } from "../models/userModel.js"
 import { generateOtp, sendOtpEmail, sendResetEmail } from "../emailVerify/sendOtp.js"
 import { buildAuthCookieOptions } from "../utils/cookies.js"
 
+const cleanEnv = (value) =>
+  String(value || "")
+    .replace(/\\n|\\r/g, "")
+    .replace(/\r|\n/g, "")
+    .trim()
+    .replace(/^"|"$/g, "")
+
 function hasEmailConfig() {
-  const hasSmtp = Boolean(process.env.EMAIL && process.env.EMAIL_PASS)
-  const hasBrevo = Boolean(process.env.BREVO_API_KEY && (process.env.EMAIL_FROM || process.env.EMAIL))
+  const hasSmtp = Boolean(cleanEnv(process.env.EMAIL) && cleanEnv(process.env.EMAIL_PASS))
+  const hasBrevo = Boolean(cleanEnv(process.env.BREVO_API_KEY) && (cleanEnv(process.env.EMAIL_FROM) || cleanEnv(process.env.EMAIL)))
   return hasSmtp || hasBrevo
 }
 
