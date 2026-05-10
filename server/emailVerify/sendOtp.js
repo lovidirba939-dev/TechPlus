@@ -1,20 +1,39 @@
-import nodemailer from "nodemailer";
-import crypto from "crypto";
+import nodemailer from "nodemailer"
+import crypto from "crypto"
 
-// 6 digit OTP generation
 export const generateOtp = () => {
   return crypto.randomInt(100000, 999999).toString()
 }
 
+const clean = (value) =>
+  String(value || "")
+    .replace(/\\n|\\r/g, "")
+    .replace(/\r|\n/g, "")
+    .trim()
+    .replace(/^"|"$/g, "")
+
+const resolveClientUrl = (overrideUrl) => {
+  const override = clean(overrideUrl)
+  if (/^https?:\/\/[^/\s]+/i.test(override)) return override.replace(/\/$/, "")
+
+  const clientUrl = clean(process.env.CLIENT_URL)
+  if (/^https?:\/\/[^/\s]+/i.test(clientUrl)) return clientUrl.replace(/\/$/, "")
+
+  return "http://localhost:5173"
+}
+
 const createTransporter = () => {
   return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
+    host: "smtp.gmail.com",
     port: 465,
     secure: true,
     auth: {
-      user: process.env.EMAIL,
-      pass: process.env.EMAIL_PASS
+      user: clean(process.env.EMAIL),
+      pass: clean(process.env.EMAIL_PASS)
     },
+    connectionTimeout: 15000,
+    greetingTimeout: 15000,
+    socketTimeout: 15000,
     tls: {
       rejectUnauthorized: false
     }
@@ -22,11 +41,11 @@ const createTransporter = () => {
 }
 
 export const sendOtpEmail = async (email, otp) => {
-  try {
-    const transporter = createTransporter()
+  const transporter = createTransporter()
 
+  try {
     await transporter.sendMail({
-      from: process.env.EMAIL,
+      from: clean(process.env.EMAIL),
       to: email,
       subject: "Your OTP - TechPlus News",
       html: `
@@ -41,24 +60,22 @@ export const sendOtpEmail = async (email, otp) => {
         </div>
       `
     })
-  } catch (error) {
-    console.error('❌ OTP email sending failed:', {
-      error: error.message,
-      code: error.code,
-      command: error.command,
-      email: email
-    });
+  } finally {
+    try {
+      transporter.close()
+    } catch {
+      // Ignore close errors after the send attempt finishes.
+    }
   }
 }
 
-export const sendResetEmail = async (email, resetToken) => {
-  try {
-    const transporter = createTransporter()
-    
-    const resetLink = `${process.env.CLIENT_URL}/password-reset?token=${resetToken}`
+export const sendResetEmail = async (email, resetToken, clientUrlOverride = "") => {
+  const transporter = createTransporter()
+  const resetLink = `${resolveClientUrl(clientUrlOverride)}/password-reset?token=${resetToken}`
 
+  try {
     await transporter.sendMail({
-      from: process.env.EMAIL,
+      from: clean(process.env.EMAIL),
       to: email,
       subject: "Password Reset - TechPlus News",
       html: `
@@ -75,12 +92,11 @@ export const sendResetEmail = async (email, resetToken) => {
         </div>
       `
     })
-  } catch (error) {
-    console.error('❌ Reset email sending failed:', {
-      error: error.message,
-      code: error.code,
-      stack: error.stack,
-      email: email
-    });
+  } finally {
+    try {
+      transporter.close()
+    } catch {
+      // Ignore close errors after the send attempt finishes.
+    }
   }
 }

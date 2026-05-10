@@ -4,7 +4,7 @@ const API_BASE_URL = (
   import.meta.env.VITE_API_URL ||
   import.meta.env.VITE_API_BASE_URL ||
   'http://localhost:5000'
-).replace(/\/$/, '');
+).replace(/\/api\/?$/, '').replace(/\/$/, '');
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -54,8 +54,8 @@ export const authAPI = {
     apiClient.post('/api/auth/login', { email, password }),
   logout: () =>
     apiClient.post('/api/auth/logout'),
-  forgotPassword: (email) =>
-    apiClient.post('/api/auth/forgot-password', { email }),
+  forgotPassword: (email, clientOrigin) =>
+    apiClient.post('/api/auth/forgot-password', { email, clientOrigin }),
   resetPassword: (token, password, confirmPassword) =>
     apiClient.post('/api/auth/reset-password', { token, password, confirmPassword })
 };
@@ -139,6 +139,5 @@ export const hackathonAPI = {
 };
 
 export default apiClient;
-
 
 

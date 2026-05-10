@@ -47,7 +47,6 @@ export default function PasswordReset() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [devResetLink, setDevResetLink] = useState('');
   const [recipientHint, setRecipientHint] = useState('');
   const { forgotPassword, resetPassword } = useAuth();
   const { addToast } = useToast();
@@ -66,13 +65,7 @@ export default function PasswordReset() {
     try {
       const response = await forgotPassword(email, window.location.origin);
       setRecipientHint(response?.recipientHint || email);
-      if (response?.devResetToken) {
-        const resetLink = `${window.location.origin}/password-reset?token=${response.devResetToken}`;
-        setDevResetLink(resetLink);
-        addToast('Development reset link generated below.', 'success');
-      } else {
-        addToast('Reset email sent. Check your inbox!', 'success');
-      }
+      addToast('Reset email sent. Check your inbox!', 'success');
       setStep('check-email');
     } catch (error) {
       addToast(error?.message || 'Failed to send reset email', 'error');
@@ -232,18 +225,6 @@ export default function PasswordReset() {
                   <p className="text-sm text-gray-600 text-center mb-6 leading-relaxed">
                     We've sent a password reset link to <strong>{recipientHint || email}</strong>. Click the link to proceed.
                   </p>
-                  
-                  {devResetLink && (
-                    <div className="mb-6 rounded-xl border border-purple-200 bg-purple-50 p-4 text-left shadow-inner">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-[#a855f7] mb-2">
-                        Development Reset Link
-                      </p>
-                      <a href={devResetLink} className="text-xs font-medium break-all text-purple-700 hover:text-purple-800 transition-colors">
-                        {devResetLink}
-                      </a>
-                    </div>
-                  )}
-
                   <button
                     onClick={() => setStep('forgot')}
                     className="w-full py-3 mt-2 rounded-full font-bold text-[#a855f7] bg-purple-50 hover:bg-purple-100 transition-all border border-purple-100"

@@ -6,8 +6,15 @@ import { User } from "../models/userModel.js"
 import { generateOtp, sendOtpEmail, sendResetEmail } from "../emailVerify/sendOtp.js"
 import { buildAuthCookieOptions } from "../utils/cookies.js"
 
+const cleanEnv = (value) =>
+  String(value || "")
+    .replace(/\\n|\\r/g, "")
+    .replace(/\r|\n/g, "")
+    .trim()
+    .replace(/^"|"$/g, "")
+
 function hasEmailConfig() {
-  return Boolean(process.env.EMAIL && process.env.EMAIL_PASS)
+  return Boolean(cleanEnv(process.env.EMAIL) && cleanEnv(process.env.EMAIL_PASS))
 }
 
 const EMAIL_TIMEOUT_MS = Number(process.env.EMAIL_TIMEOUT_MS) || 15000
@@ -254,20 +261,16 @@ export const forgotPassword = async (req, res) => {
 
     console.log(`[Auth] ForgotPassword request for: ${email}. Email config detected: ${hasEmailConfig()}`);
 
-    let emailSent = false
     if (hasEmailConfig()) {
-      try {
-        await sendEmailWithTimeout(sendResetEmail(email, resetToken))
-        emailSent = true
-      } catch (emailError) {
-        console.error("[Auth] Forgot password email failed:", emailError.message)
-      }
+      const originFromClient = String(req.body?.clientOrigin || "").trim()
+      const originFromHeader = String(req.headers.origin || "").trim()
+      await sendEmailWithTimeout(sendResetEmail(email, resetToken, originFromClient || originFromHeader))
     }
 
     res.status(200).json({
       success: true,
-      message: emailSent ? "Password reset email sent" : "Email unavailable. Use reset link below.",
-      ...(emailSent ? {} : { devResetToken: resetToken })
+      message: hasEmailConfig() ? "Password reset email sent" : "Password reset token generated in development mode",
+      recipientHint: email
     })
 
   } catch (error) {
