@@ -165,8 +165,12 @@ async function sendWithHttpRelay(mailOptions) {
 }
 
 async function sendEmail(mailOptions) {
-  const relayResult = await sendWithHttpRelay(mailOptions)
-  if (relayResult) return relayResult
+  try {
+    const relayResult = await sendWithHttpRelay(mailOptions)
+    if (relayResult) return relayResult
+  } catch (error) {
+    console.log(`[Email] Relay attempt failed: ${error.message}. Falling back to direct transport.`)
+  }
 
   return sendWithGmail(mailOptions)
 }
