@@ -10,6 +10,16 @@ function hasEmailConfig() {
   return Boolean(process.env.EMAIL && process.env.EMAIL_PASS)
 }
 
+const EMAIL_TIMEOUT_MS = Number(process.env.EMAIL_TIMEOUT_MS) || 15000
+async function sendEmailWithTimeout(task) {
+  return Promise.race([
+    task,
+    new Promise((_, reject) => {
+      setTimeout(() => reject(new Error("Email service timeout")), EMAIL_TIMEOUT_MS)
+    })
+  ])
+}
+
 // ================== REGISTER ==================
 export const register = async (req, res) => {
   try {
@@ -244,15 +254,20 @@ export const forgotPassword = async (req, res) => {
 
     console.log(`[Auth] ForgotPassword request for: ${email}. Email config detected: ${hasEmailConfig()}`);
 
-    // Only send email if config is present
+    let emailSent = false
     if (hasEmailConfig()) {
-      await sendResetEmail(email, resetToken)
+      try {
+        await sendEmailWithTimeout(sendResetEmail(email, resetToken))
+        emailSent = true
+      } catch (emailError) {
+        console.error("[Auth] Forgot password email failed:", emailError.message)
+      }
     }
 
     res.status(200).json({
       success: true,
-      message: hasEmailConfig() ? "Password reset email sent" : "Password reset token generated in development mode",
-      ...(hasEmailConfig() ? {} : { devResetToken: resetToken })
+      message: emailSent ? "Password reset email sent" : "Email unavailable. Use reset link below.",
+      ...(emailSent ? {} : { devResetToken: resetToken })
     })
 
   } catch (error) {

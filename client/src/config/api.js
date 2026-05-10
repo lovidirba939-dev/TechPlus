@@ -9,12 +9,20 @@ const API_BASE_URL = (
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
-  withCredentials: true
+  withCredentials: true,
+  timeout: 20000
 });
 
 apiClient.interceptors.response.use(
   (response) => response.data,
   (error) => {
+    if (!error?.response) {
+      return Promise.reject({
+        success: false,
+        message: 'Server timeout/unreachable. Please retry in a few seconds.'
+      });
+    }
+
     const status = error.response?.status;
     const reqUrl = error.config?.url || '';
     const skip401Redirect =
@@ -131,7 +139,6 @@ export const hackathonAPI = {
 };
 
 export default apiClient;
-
 
 
 
