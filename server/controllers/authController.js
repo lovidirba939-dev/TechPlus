@@ -308,19 +308,27 @@ export const forgotPassword = async (req, res) => {
 
     console.log(`[Auth] ForgotPassword request for: ${email}. Email config detected: ${hasEmailConfig()}`);
 
+    let emailSent = false
     if (hasEmailConfig()) {
       const originFromClient = String(req.body?.clientOrigin || "").trim()
       const originFromHeader = String(req.headers.origin || "").trim()
-      await sendEmailWithTimeout(
-        sendResetEmail(email, resetToken, originFromClient || originFromHeader)
-      )
+      try {
+        await sendEmailWithTimeout(
+          sendResetEmail(email, resetToken, originFromClient || originFromHeader)
+        )
+        emailSent = true
+      } catch (emailError) {
+        console.error("[Auth] ForgotPassword email failed, using token fallback:", emailError.message, emailError.code || "", emailError.responseCode || "")
+      }
     }
 
     res.status(200).json({
       success: true,
-      message: hasEmailConfig() ? "Password reset email sent" : "Password reset token generated in development mode",
+      message: emailSent
+        ? "Password reset email sent"
+        : "Email service unavailable. Use the reset link shown below.",
       recipientHint: maskEmail(email),
-      ...(hasEmailConfig() ? {} : { devResetToken: resetToken })
+      ...(emailSent ? {} : { devResetToken: resetToken })
     })
 
   } catch (error) {
