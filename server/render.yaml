@@ -34,3 +34,5 @@ services:
         value: none
       - key: SERVE_STATIC
         value: false
+      - key: ENABLE_STARTUP_WARMUPS
+        value: true

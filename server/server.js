@@ -112,6 +112,11 @@ if (process.env.NODE_ENV === "production") {
     app.get("*", (req, res) => {
       res.sendFile(path.join(staticDir, "index.html"))
     })
+  } else {
+    // Production API-only mode (frontend on Vercel, backend on Render)
+    app.get("/", (req, res) => {
+      res.json({ success: true, message: "TechPlus API Server Running", env: "production" })
+    })
   }
 } else {
   app.get("/", (req, res) => {

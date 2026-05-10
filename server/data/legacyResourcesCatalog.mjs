@@ -969,5 +969,139 @@ export const LEGACY_CATALOG = [
         ]
       })
     ]
+  },
+  {
+    category: "India Creator Tracks",
+    links: [
+      course({
+        title: "CodeHelp DSA Supreme (Live / Cohort)",
+        url: "https://www.codehelp.in/",
+        desc: "Structured paid DSA + interview preparation track from CodeHelp by Love Babbar and team.",
+        platform: "CodeHelp",
+        domain: "Data Structures & Algorithms",
+        difficulty: "Beginner to Advanced",
+        resourceType: "Paid Course",
+        tags: ["dsa", "placements", "interview prep", "love babbar"]
+      }),
+      course({
+        title: "Apna College Sigma Web Development (Cohort)",
+        url: "https://www.apnacollege.in/",
+        desc: "Paid full-stack cohort from Apna College focused on MERN projects, deployment, and interview prep.",
+        platform: "Apna College",
+        domain: "Full Stack Development",
+        difficulty: "Beginner to Advanced",
+        resourceType: "Paid Course",
+        tags: ["mern", "web dev", "cohort", "apna college"]
+      }),
+      course({
+        title: "Sheryians Job Ready AI Powered Cohort",
+        url: "https://www.sheryians.com/courses",
+        desc: "Paid job-ready web + DSA + aptitude style program from Sheryians Coding School.",
+        platform: "Sheryians Coding School",
+        domain: "Full Stack Development",
+        difficulty: "Beginner to Advanced",
+        resourceType: "Paid Course",
+        tags: ["web dev", "dsa", "gen ai", "cohort"]
+      }),
+      course({
+        title: "CodeHelp - DSA Playlist (YouTube)",
+        url: "https://www.youtube.com/@CodeHelp/playlists",
+        desc: "Free YouTube DSA learning playlists from Love Babbar's CodeHelp channel.",
+        platform: "YouTube",
+        domain: "Data Structures & Algorithms",
+        difficulty: "Beginner to Intermediate",
+        resourceType: "YouTube Playlist",
+        tags: ["dsa", "cpp", "love babbar", "free"]
+      }),
+      course({
+        title: "Apna College - Java + DSA Playlists",
+        url: "https://www.youtube.com/@ApnaCollegeOfficial/playlists",
+        desc: "Free domain playlists for Java, DSA, web development, and interview prep by Apna College.",
+        platform: "YouTube",
+        domain: "Java",
+        difficulty: "Beginner to Intermediate",
+        resourceType: "YouTube Playlist",
+        tags: ["java", "dsa", "placements", "free"]
+      }),
+      course({
+        title: "Sheryians Coding School - Web Dev Playlists",
+        url: "https://www.youtube.com/@sheryians/playlists",
+        desc: "Free YouTube playlists for frontend, backend, JavaScript projects, and web fundamentals.",
+        platform: "YouTube",
+        domain: "Frontend Development",
+        difficulty: "Beginner to Intermediate",
+        resourceType: "YouTube Playlist",
+        tags: ["frontend", "javascript", "projects", "free"]
+      }),
+      course({
+        title: "CampusX - Data Science & ML Playlists",
+        url: "https://www.youtube.com/@campusx-official/playlists",
+        desc: "Free playlists for machine learning, statistics, SQL, and end-to-end data science workflows.",
+        platform: "YouTube",
+        domain: "Data Science",
+        difficulty: "Beginner to Advanced",
+        resourceType: "YouTube Playlist",
+        tags: ["machine learning", "data science", "campusx", "free"]
+      }),
+      course({
+        title: "CampusX 100 Days of Machine Learning",
+        url: "https://learnwith.campusx.in/courses/100-Days-of-Machine-Learning-YouTube-1763210027804-6918732bee601b12112865e6",
+        desc: "Structured ML roadmap style series with day-wise lessons and accompanying notes/resources.",
+        platform: "CampusX",
+        domain: "Machine Learning",
+        difficulty: "Intermediate",
+        resourceType: "Free Course With Certificate",
+        tags: ["ml", "roadmap", "python", "free"]
+      }),
+      course({
+        title: "CodeHelp DBMS + OS Placement Series",
+        url: "https://linktr.ee/codehelp",
+        desc: "Free placement-oriented theory playlists including DBMS and OS from CodeHelp resources.",
+        platform: "CodeHelp",
+        domain: "Computer Science Fundamentals",
+        difficulty: "Intermediate",
+        resourceType: "YouTube Playlist",
+        tags: ["dbms", "os", "placements", "cs fundamentals"]
+      }),
+      playlistSeries({
+        title: "India Creator Web Dev Sampler Playlist",
+        desc: "High-signal web development sampler with long-form videos popular among Indian creator audiences.",
+        domain: "Frontend Development",
+        difficulty: "Beginner to Intermediate",
+        duration: "6h 45m",
+        tags: ["web dev", "javascript", "html", "css"],
+        playlist: [
+          { title: "HTML & CSS Full Course", videoId: "mU6anWqZJcc", duration: "2:28:22" },
+          { title: "JavaScript Full Course for Beginners", videoId: "VlPiVmYuoqw", duration: "3:26:42" },
+          { title: "React JS Crash Course", videoId: "w7ejDZ8SWv8", duration: "1:48:39" }
+        ]
+      }),
+      playlistSeries({
+        title: "India Creator DSA Sampler Playlist",
+        desc: "DSA-focused mix of interview preparation sessions and coding problem-solving walkthroughs.",
+        domain: "Data Structures & Algorithms",
+        difficulty: "Beginner to Advanced",
+        duration: "5h 30m",
+        tags: ["dsa", "interviews", "problem solving"],
+        playlist: [
+          { title: "Data Structures Easy to Advanced Course", videoId: "RBSGKlAvoiM", duration: "8:56:11" },
+          { title: "Dynamic Programming for Beginners", videoId: "oBt53YbR9Kk", duration: "57:00" },
+          { title: "Binary Search Interview Pattern", videoId: "GU7DpgHINWQ", duration: "34:15" }
+        ]
+      }),
+      playlistSeries({
+        title: "India Creator Data Science Sampler Playlist",
+        desc: "Machine learning and data science starter playlist with Python, ML fundamentals, and practical thinking.",
+        domain: "Data Science",
+        difficulty: "Beginner to Intermediate",
+        duration: "7h 10m",
+        tags: ["python", "machine learning", "analytics"],
+        playlist: [
+          { title: "Python for Data Science", videoId: "LHBE6Q9XlzI", duration: "2:36:09" },
+          { title: "Machine Learning for Everybody", videoId: "i_LwzRVP7bg", duration: "1:55:00" },
+          { title: "Data Analysis with Pandas", videoId: "vmEHCJofslg", duration: "1:30:00" }
+        ]
+      })
+    ]
   }
 ];

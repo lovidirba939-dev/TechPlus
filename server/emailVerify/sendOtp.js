@@ -41,7 +41,10 @@ const buildFromAddress = () => getConfiguredSenderAddress() || "no-reply@techplu
 const smtpEnabled = () => Boolean(clean(process.env.EMAIL) && clean(process.env.EMAIL_PASS));
 const brevoEnabled = () => Boolean(clean(process.env.BREVO_API_KEY) && getConfiguredSenderAddress());
 
-const baseSmtpOptions = {
+// IMPORTANT: Build SMTP options lazily (at send-time) so dotenv.config()
+// has already run. Reading process.env at module-load time caused
+// "Missing credentials for PLAIN" because env vars weren't loaded yet.
+const getBaseSmtpOptions = () => ({
   host: "smtp.gmail.com",
   auth: {
     user: clean(process.env.EMAIL),
@@ -55,7 +58,7 @@ const baseSmtpOptions = {
   greetingTimeout: 10000,
   socketTimeout: 15000,
   lookup: forceIpv4Lookup
-};
+});
 
 const smtpAttempts = [
   { port: 587, secure: false },
@@ -64,6 +67,7 @@ const smtpAttempts = [
 
 async function sendWithSmtpFallback(mailOptions) {
   let lastError;
+  const baseSmtpOptions = getBaseSmtpOptions();
 
   for (const attempt of smtpAttempts) {
     const transporter = nodemailer.createTransport({

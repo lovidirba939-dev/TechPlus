@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useMemo, useCallback, useDeferredValue } from 'react'
+import React, { useState, useEffect, useMemo, useCallback, useDeferredValue } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useToast } from '../context/ToastContext'
 import { hackathonAPI } from '../config/api'
@@ -324,7 +324,7 @@ export default function Hackathons() {
                 </AnimatePresence>
               </div>
 
-              <div className="hidden lg:block">
+              <div className="hidden lg:block mt-6">
                 <h1 className="text-3xl font-black text-white uppercase tracking-tighter mb-4">Hackathon Discovery</h1>
                 <p className="text-base text-white/50 leading-relaxed max-w-2xl">
                   Find and join upcoming hackathons worldwide
