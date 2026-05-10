@@ -7,12 +7,13 @@ const cleanBase = (value) =>
     .replace(/\/$/, '');
 
 const isProd = import.meta.env.PROD;
+const configuredBase = cleanBase(import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL);
+const renderBase = cleanBase(import.meta.env.VITE_RENDER_API_URL || 'https://techplus-gaya.onrender.com');
 const CANDIDATE_BASES = [
-  cleanBase(import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL),
-  isProd ? cleanBase(import.meta.env.VITE_RENDER_API_URL || 'https://techplus-xzqw.onrender.com') : '',
-  isProd ? 'https://techplus-gaya.onrender.com' : '',
+  isProd ? configuredBase || renderBase : '',
+  isProd ? renderBase : '',
   !isProd ? 'http://localhost:5000' : ''
-].filter(Boolean);
+].filter(Boolean).filter((base, index, bases) => bases.indexOf(base) === index);
 
 const API_BASE_URL = CANDIDATE_BASES[0];
 
@@ -20,7 +21,7 @@ const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
-  timeout: 90000
+  timeout: 35000
 });
 
 let activeBaseIndex = 0;
@@ -35,9 +36,16 @@ apiClient.interceptors.response.use(
   (response) => response.data,
   async (error) => {
     const originalConfig = error?.config || {};
+    const reqUrl = originalConfig.url || '';
+    const method = String(originalConfig.method || 'get').toLowerCase();
+    const isAuthRequest = reqUrl.includes('/api/auth/');
+    const canRetryWithNextBase =
+      !isAuthRequest &&
+      ['get', 'head', 'options'].includes(method) &&
+      !originalConfig.__retryWithNextBase;
 
     if (!error?.response) {
-      if (!originalConfig.__retryWithNextBase && switchToNextBase()) {
+      if (canRetryWithNextBase && switchToNextBase()) {
         originalConfig.__retryWithNextBase = true;
         originalConfig.baseURL = apiClient.defaults.baseURL;
         return apiClient.request(originalConfig);
@@ -49,14 +57,13 @@ apiClient.interceptors.response.use(
       });
     }
 
-    if ([404, 405, 502, 503, 504].includes(error.response.status) && !originalConfig.__retryWithNextBase && switchToNextBase()) {
+    if ([404, 405, 502, 503, 504].includes(error.response.status) && canRetryWithNextBase && switchToNextBase()) {
       originalConfig.__retryWithNextBase = true;
       originalConfig.baseURL = apiClient.defaults.baseURL;
       return apiClient.request(originalConfig);
     }
 
     const status = error.response?.status;
-    const reqUrl = error.config?.url || '';
     const skip401Redirect =
       reqUrl.includes('/api/user/profile') ||
       reqUrl.includes('/api/auth/login') ||

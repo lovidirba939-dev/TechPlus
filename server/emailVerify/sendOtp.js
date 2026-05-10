@@ -31,6 +31,18 @@ const auth = () => ({
   pass: clean(process.env.EMAIL_PASS)
 })
 
+const resolveRelayUrl = () => {
+  const explicitRelay = clean(process.env.EMAIL_RELAY_URL)
+  if (/^https?:\/\/[^/\s]+/i.test(explicitRelay)) return explicitRelay
+
+  const clientUrl = clean(process.env.CLIENT_URL)
+  if (/^https?:\/\/[^/\s]+/i.test(clientUrl)) {
+    return `${clientUrl.replace(/\/$/, "")}/api/send-email`
+  }
+
+  return ""
+}
+
 const baseTimeouts = () => ({
   connectionTimeout: EMAIL_TIMEOUT_MS,
   greetingTimeout: EMAIL_TIMEOUT_MS,
@@ -109,8 +121,61 @@ async function sendWithGmail(mailOptions) {
   throw lastError || new Error("Email send failed")
 }
 
+async function sendWithHttpRelay(mailOptions) {
+  const relayUrl = resolveRelayUrl()
+  const relaySecret = clean(process.env.EMAIL_RELAY_SECRET)
+
+  if (!relayUrl || !relaySecret) {
+    return null
+  }
+
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), EMAIL_TIMEOUT_MS)
+
+  try {
+    const response = await fetch(relayUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-email-relay-secret": relaySecret
+      },
+      body: JSON.stringify({
+        from: mailOptions.from,
+        to: mailOptions.to,
+        subject: mailOptions.subject,
+        html: mailOptions.html
+      }),
+      signal: controller.signal
+    })
+
+    const text = await response.text()
+    let data = {}
+    try {
+      data = text ? JSON.parse(text) : {}
+    } catch {
+      data = { message: text }
+    }
+
+    if (!response.ok || data.success === false) {
+      throw new Error(data.message || `Email relay failed with status ${response.status}`)
+    }
+
+    console.log(`[Email] Sent via HTTPS relay: ${data.messageId || "ok"}`)
+    return data
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
+async function sendEmail(mailOptions) {
+  const relayResult = await sendWithHttpRelay(mailOptions)
+  if (relayResult) return relayResult
+
+  return sendWithGmail(mailOptions)
+}
+
 export const sendOtpEmail = async (email, otp) => {
-  await sendWithGmail({
+  await sendEmail({
     from: clean(process.env.EMAIL),
     to: email,
     subject: "Your OTP - TechPlus News",
@@ -131,7 +196,7 @@ export const sendOtpEmail = async (email, otp) => {
 export const sendResetEmail = async (email, resetToken, clientUrlOverride = "") => {
   const resetLink = `${resolveClientUrl(clientUrlOverride)}/password-reset?token=${resetToken}`
 
-  await sendWithGmail({
+  await sendEmail({
     from: clean(process.env.EMAIL),
     to: email,
     subject: "Password Reset - TechPlus News",

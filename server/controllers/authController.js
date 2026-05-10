@@ -17,7 +17,8 @@ function hasEmailConfig() {
   return Boolean(cleanEnv(process.env.EMAIL) && cleanEnv(process.env.EMAIL_PASS))
 }
 
-const EMAIL_TIMEOUT_MS = Number(process.env.EMAIL_TIMEOUT_MS) || 65000
+const isProduction = cleanEnv(process.env.NODE_ENV) === "production"
+const EMAIL_TIMEOUT_MS = Number(process.env.EMAIL_TIMEOUT_MS) || 25000
 async function sendEmailWithTimeout(task) {
   return Promise.race([
     task,
@@ -37,6 +38,10 @@ const toEmailErrorMessage = (error) => {
 
 const normalizeEmail = (value) => String(value || "").trim().toLowerCase()
 const normalizeUsername = (value) => String(value || "").trim()
+const emailUnavailable = () => ({
+  success: false,
+  message: "Email service is not configured. Please add EMAIL and EMAIL_PASS on Render."
+})
 
 // ================== REGISTER ==================
 export const register = async (req, res) => {
@@ -83,6 +88,10 @@ export const register = async (req, res) => {
 
     if (existingByEmail?.isVerified) {
       return res.status(400).json({ success: false, message: "Email already registered. Please log in." })
+    }
+
+    if (!hasEmailConfig() && isProduction) {
+      return res.status(503).json(emailUnavailable())
     }
 
     const hashedPassword = await bcrypt.hash(password, 10)
@@ -143,7 +152,8 @@ export const register = async (req, res) => {
 // ================== VERIFY OTP ==================
 export const verifyOtp = async (req, res) => {
   try {
-    const { email, otp } = req.body
+    const email = normalizeEmail(req.body.email)
+    const { otp } = req.body
 
     if (!email || !otp) {
       return res.status(400).json({ success: false, message: "Email and OTP are required" })
@@ -196,10 +206,14 @@ export const verifyOtp = async (req, res) => {
 // ================== RESEND OTP ==================
 export const resendOtp = async (req, res) => {
   try {
-    const { email } = req.body
+    const email = normalizeEmail(req.body.email)
 
     if (!email) {
       return res.status(400).json({ success: false, message: "Email is required" })
+    }
+
+    if (!hasEmailConfig() && isProduction) {
+      return res.status(503).json(emailUnavailable())
     }
 
     const user = await User.findOne({ email })
@@ -236,7 +250,8 @@ export const resendOtp = async (req, res) => {
 // ================== LOGIN ==================
 export const login = async (req, res) => {
   try {
-    const { email, password } = req.body
+    const email = normalizeEmail(req.body.email)
+    const { password } = req.body
 
     if (!email || !password) {
       return res.status(400).json({ success: false, message: "Email and password are required" })
@@ -290,16 +305,19 @@ export const logout = async (req, res) => {
 // ================== FORGOT PASSWORD ==================
 export const forgotPassword = async (req, res) => {
   try {
-    const { email } = req.body
+    const email = normalizeEmail(req.body.email)
 
     if (!email) {
       return res.status(400).json({ success: false, message: "Email is required" })
     }
 
+    if (!hasEmailConfig() && isProduction) {
+      return res.status(503).json(emailUnavailable())
+    }
+
     const user = await User.findOne({ email })
     if (!user) {
-      // For security, don't reveal if email exists
-      return res.status(200).json({ success: true, message: "If email exists, reset link sent" })
+      return res.status(404).json({ success: false, message: "No account found with this email. Please sign up first." })
     }
 
     const resetToken = crypto.randomBytes(32).toString('hex')
