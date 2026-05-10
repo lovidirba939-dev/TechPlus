@@ -27,6 +27,14 @@ async function sendEmailWithTimeout(task) {
   ])
 }
 
+const toEmailErrorMessage = (error) => {
+  const raw = `${error?.message || ""} ${error?.code || ""}`
+  if (/timeout|ETIMEDOUT|ECONNECTION|ENETUNREACH|ECONNREFUSED/i.test(raw)) {
+    return "Email service connection timeout. Please try again shortly."
+  }
+  return error?.message || "Email service failed"
+}
+
 const normalizeEmail = (value) => String(value || "").trim().toLowerCase()
 const normalizeUsername = (value) => String(value || "").trim()
 
@@ -66,7 +74,11 @@ export const register = async (req, res) => {
     const existingByUsername = await User.findOne({ username })
 
     if (existingByUsername && existingByUsername.email !== email) {
-      return res.status(400).json({ success: false, message: "Username already taken" })
+      if (!existingByUsername.isVerified) {
+        await User.deleteOne({ _id: existingByUsername._id, isVerified: false })
+      } else {
+        return res.status(400).json({ success: false, message: "Username already taken" })
+      }
     }
 
     if (existingByEmail?.isVerified) {
@@ -85,7 +97,12 @@ export const register = async (req, res) => {
       await existingByEmail.save()
 
       if (hasEmailConfig()) {
-        await sendEmailWithTimeout(sendOtpEmail(email, otp))
+        try {
+          await sendEmailWithTimeout(sendOtpEmail(email, otp))
+        } catch (emailError) {
+          await User.deleteOne({ _id: existingByEmail._id, isVerified: false })
+          return res.status(503).json({ success: false, message: toEmailErrorMessage(emailError) })
+        }
       }
 
       return res.status(200).json({
@@ -96,7 +113,11 @@ export const register = async (req, res) => {
     }
 
     if (hasEmailConfig()) {
-      await sendEmailWithTimeout(sendOtpEmail(email, otp))
+      try {
+        await sendEmailWithTimeout(sendOtpEmail(email, otp))
+      } catch (emailError) {
+        return res.status(503).json({ success: false, message: toEmailErrorMessage(emailError) })
+      }
     }
 
     await User.create({
@@ -194,7 +215,11 @@ export const resendOtp = async (req, res) => {
 
     // Only attempt to send email if config is present
     if (hasEmailConfig()) {
-      await sendEmailWithTimeout(sendOtpEmail(email, otp))
+      try {
+        await sendEmailWithTimeout(sendOtpEmail(email, otp))
+      } catch (emailError) {
+        return res.status(503).json({ success: false, message: toEmailErrorMessage(emailError) })
+      }
     }
 
     res.status(200).json({
@@ -289,7 +314,11 @@ export const forgotPassword = async (req, res) => {
     if (hasEmailConfig()) {
       const originFromClient = String(req.body?.clientOrigin || "").trim()
       const originFromHeader = String(req.headers.origin || "").trim()
-      await sendEmailWithTimeout(sendResetEmail(email, resetToken, originFromClient || originFromHeader))
+      try {
+        await sendEmailWithTimeout(sendResetEmail(email, resetToken, originFromClient || originFromHeader))
+      } catch (emailError) {
+        return res.status(503).json({ success: false, message: toEmailErrorMessage(emailError) })
+      }
     }
 
     res.status(200).json({

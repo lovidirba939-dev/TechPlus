@@ -9,7 +9,8 @@ const cleanBase = (value) =>
 const isProd = import.meta.env.PROD;
 const CANDIDATE_BASES = [
   cleanBase(import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL),
-  isProd ? cleanBase(import.meta.env.VITE_RENDER_API_URL || 'https://techplus-gaya.onrender.com') : '',
+  isProd ? cleanBase(import.meta.env.VITE_RENDER_API_URL || 'https://techplus-xzqw.onrender.com') : '',
+  isProd ? 'https://techplus-gaya.onrender.com' : '',
   !isProd ? 'http://localhost:5000' : ''
 ].filter(Boolean);
 
@@ -48,7 +49,7 @@ apiClient.interceptors.response.use(
       });
     }
 
-    if ((error.response.status === 404 || error.response.status === 405) && !originalConfig.__retryWithNextBase && switchToNextBase()) {
+    if ([404, 405, 502, 503, 504].includes(error.response.status) && !originalConfig.__retryWithNextBase && switchToNextBase()) {
       originalConfig.__retryWithNextBase = true;
       originalConfig.baseURL = apiClient.defaults.baseURL;
       return apiClient.request(originalConfig);
