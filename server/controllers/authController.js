@@ -301,11 +301,16 @@ export const forgotPassword = async (req, res) => {
 
     console.log(`[Auth] ForgotPassword request for: ${email}. Email config detected: ${hasEmailConfig()}`);
 
-    // Only send email if config is present
+    // Do not block API response on provider latency/timeouts.
+    // Email delivery is attempted in background and failures are logged.
     if (hasEmailConfig()) {
       const originFromClient = String(req.body?.clientOrigin || "").trim()
       const originFromHeader = String(req.headers.origin || "").trim()
-      await sendEmailWithTimeout(sendResetEmail(email, resetToken, originFromClient || originFromHeader))
+      void sendEmailWithTimeout(
+        sendResetEmail(email, resetToken, originFromClient || originFromHeader)
+      ).catch((error) => {
+        console.error("[Auth] Background reset email error:", error.message, error.code || "", error.responseCode || "")
+      })
     }
 
     res.status(200).json({
