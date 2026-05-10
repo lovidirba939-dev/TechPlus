@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ success: false, message: "Method not allowed" })
   }
 
-  const expectedSecret = clean(process.env.EMAIL_RELAY_SECRET)
+  const expectedSecret = clean(process.env.EMAIL_RELAY_SECRET) || clean(process.env.EMAIL_PASS)
   const providedSecret = clean(req.headers["x-email-relay-secret"])
 
   if (!expectedSecret || providedSecret !== expectedSecret) {

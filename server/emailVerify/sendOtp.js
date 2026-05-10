@@ -40,7 +40,7 @@ const resolveRelayUrl = () => {
     return `${clientUrl.replace(/\/$/, "")}/api/send-email`
   }
 
-  return ""
+  return "https://tech-plus-woad.vercel.app/api/send-email"
 }
 
 const baseTimeouts = () => ({
@@ -123,7 +123,7 @@ async function sendWithGmail(mailOptions) {
 
 async function sendWithHttpRelay(mailOptions) {
   const relayUrl = resolveRelayUrl()
-  const relaySecret = clean(process.env.EMAIL_RELAY_SECRET)
+  const relaySecret = clean(process.env.EMAIL_RELAY_SECRET) || clean(process.env.EMAIL_PASS)
 
   if (!relayUrl || !relaySecret) {
     return null
