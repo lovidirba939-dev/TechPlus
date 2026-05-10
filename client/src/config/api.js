@@ -1,10 +1,22 @@
 import axios from 'axios';
 
-const API_BASE_URL = (
-  import.meta.env.VITE_API_URL ||
-  import.meta.env.VITE_API_BASE_URL ||
-  'http://localhost:5000'
-).replace(/\/$/, '');
+const cleanBase = (value) => String(value || '').trim().replace(/\/$/, '');
+const isProd = typeof import.meta !== 'undefined' && import.meta.env?.PROD;
+
+const configuredBase = cleanBase(
+  import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL
+);
+
+const runtimeOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+
+const CANDIDATE_BASES = [
+  configuredBase,
+  isProd ? cleanBase(import.meta.env.VITE_RENDER_API_URL || 'https://techplus-backend.onrender.com') : '',
+  isProd ? cleanBase(`${runtimeOrigin}/api`) : '',
+  !isProd ? 'http://localhost:5000' : ''
+].filter(Boolean);
+
+const API_BASE_URL = CANDIDATE_BASES[0];
 
 console.log('[TechPlus] API Base URL:', API_BASE_URL);
 
@@ -12,12 +24,35 @@ const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
-  timeout: 30000
+  timeout: 60000
 });
+
+let activeBaseURL = API_BASE_URL;
+let failoverIndex = 0;
+
+function moveToNextBase() {
+  if (failoverIndex >= CANDIDATE_BASES.length - 1) return false;
+  failoverIndex += 1;
+  activeBaseURL = CANDIDATE_BASES[failoverIndex];
+  apiClient.defaults.baseURL = activeBaseURL;
+  console.warn('[TechPlus] Switched API Base URL to:', activeBaseURL);
+  return true;
+}
 
 apiClient.interceptors.response.use(
   (response) => response.data,
-  (error) => {
+  async (error) => {
+    const originalConfig = error?.config || {};
+
+    if (!error?.response) {
+      const canRetry = !originalConfig.__networkRetryAttempted;
+      if (canRetry && moveToNextBase()) {
+        originalConfig.__networkRetryAttempted = true;
+        originalConfig.baseURL = activeBaseURL;
+        return apiClient.request(originalConfig);
+      }
+    }
+
     if (!error?.response) {
       const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
       return Promise.reject({

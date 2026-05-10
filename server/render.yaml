@@ -30,6 +30,8 @@ services:
         sync: false
       - key: ALLOWED_ORIGINS
         sync: false
+      - key: ALLOW_VERCEL_PREVIEW_ORIGINS
+        value: true
       - key: COOKIE_SAME_SITE
         value: none
       - key: SERVE_STATIC
