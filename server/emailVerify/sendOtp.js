@@ -40,33 +40,38 @@ const baseTimeouts = () => ({
 
 const createTransportStrategies = () => [
   {
-    label: "gmail-service",
+    label: "smtp-465-ipv4",
+    resolveHost: true,
     config: {
-      service: "gmail",
+      port: 465,
+      secure: true,
       auth: auth(),
-      ...baseTimeouts()
+      ...baseTimeouts(),
+      family: 4,
+      tls: {
+        rejectUnauthorized: false,
+        servername: "smtp.gmail.com"
+      }
     }
   },
   {
-    label: "smtp-465",
+    label: "gmail-service-ipv4",
+    config: {
+      service: "gmail",
+      auth: auth(),
+      ...baseTimeouts(),
+      family: 4
+    }
+  },
+  {
+    label: "smtp-465-hostname",
     config: {
       host: "smtp.gmail.com",
       port: 465,
       secure: true,
       auth: auth(),
       ...baseTimeouts(),
-      tls: { rejectUnauthorized: false }
-    }
-  },
-  {
-    label: "smtp-587",
-    config: {
-      host: "smtp.gmail.com",
-      port: 587,
-      secure: false,
-      auth: auth(),
-      ...baseTimeouts(),
-      requireTLS: true,
+      family: 4,
       tls: { rejectUnauthorized: false }
     }
   }
@@ -75,21 +80,28 @@ const createTransportStrategies = () => [
 async function sendWithGmail(mailOptions) {
   let lastError
 
-  for (const { label, config } of createTransportStrategies()) {
-    const transporter = nodemailer.createTransport(config)
-    try {
-      console.log(`[Email] Trying ${label}`)
-      const info = await transporter.sendMail(mailOptions)
-      console.log(`[Email] Sent via ${label}: ${info.messageId}`)
-      return info
-    } catch (error) {
-      lastError = error
-      console.error(`[Email] ${label} failed:`, error.message, error.code || "")
-    } finally {
+  for (const strategy of createTransportStrategies()) {
+    const hosts = strategy.resolveHost
+      ? await dns.promises.resolve4("smtp.gmail.com").catch(() => ["smtp.gmail.com"])
+      : [strategy.config.host || "smtp.gmail.com"]
+
+    for (const host of hosts) {
+      const config = { ...strategy.config, host }
+      const transporter = nodemailer.createTransport(config)
       try {
-        transporter.close()
-      } catch {
-        // Ignore close errors after the send attempt finishes.
+        console.log(`[Email] Trying ${strategy.label} (${host})`)
+        const info = await transporter.sendMail(mailOptions)
+        console.log(`[Email] Sent via ${strategy.label}: ${info.messageId}`)
+        return info
+      } catch (error) {
+        lastError = error
+        console.error(`[Email] ${strategy.label} failed:`, error.message, error.code || "")
+      } finally {
+        try {
+          transporter.close()
+        } catch {
+          // Ignore close errors after the send attempt finishes.
+        }
       }
     }
   }
